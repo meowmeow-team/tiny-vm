@@ -1,0 +1,8 @@
+
+public class LOL {
+    public void Main(){
+        System.print("im gonna fucking kill myself");
+
+        int a = 10;
+    }
+}

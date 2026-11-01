@@ -1,0 +1,46 @@
+#include "../include/type_holder.hpp"
+
+#include <algorithm>
+#include <cctype>
+
+namespace {
+bool is_num(std::string_view s) noexcept {
+    return !s.empty() && std::all_of(s.begin(), s.end(), [](unsigned char c) {
+        return std::isdigit(c);
+    });
+}
+}  // namespace
+
+const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
+    {"public", TokenType::KEYWORD},    {"private", TokenType::KEYWORD},
+    {"protected", TokenType::KEYWORD}, {"class", TokenType::KEYWORD},
+    {"void", TokenType::KEYWORD},      {"bool", TokenType::KEYWORD},
+    {"byte", TokenType::KEYWORD},      {"int", TokenType::KEYWORD},
+    {"char", TokenType::KEYWORD},      {"float", TokenType::KEYWORD},
+    {"double", TokenType::KEYWORD},    {"=", TokenType::OPERATOR},
+    {"+", TokenType::OPERATOR},        {"-", TokenType::OPERATOR},
+    {"}", TokenType::SYMBOL},          {"{", TokenType::SYMBOL},
+    {"\"", TokenType::STRING_SYMBOL},  {".", TokenType::DOT},
+    {";", TokenType::SEMICOLON},       {"/", TokenType::LINE_COMMENT}};
+
+const std::set<char> TypeHolder::symbols = {'{', '}', '(', ')',
+                                            '[', ']', '"', ';'};
+
+TokenType TypeHolder::find(std::string_view word) noexcept {
+    if (word.empty()) return TokenType::UNKNOWN;
+    if (is_num(word)) return TokenType::NUMBER;
+
+    auto it = src.find(word);
+    if (it == src.end()) return TokenType::UNKNOWN;
+
+    return it->second;
+}
+
+TokenType TypeHolder::find(char c) noexcept {
+    return find(std::string_view(&c, 1));
+}
+
+bool TypeHolder::is_symbol(char c) noexcept {
+    auto it = symbols.find(c);
+    return it != symbols.end();
+}
