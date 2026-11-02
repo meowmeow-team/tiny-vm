@@ -14,6 +14,7 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
 
     size_t   row = 0;
     uint32_t abs = 0;
+    bool     is_str = false;
 
     std::string line;
     while (std::getline(file, line)) {
@@ -21,16 +22,17 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
         size_t pos = 0;
 
         while (pos < line.size()) {
-            if (std::isspace(line[pos])) {
+            unsigned char c = line[pos];
+            if (std::isspace(c)) {
                 pos++;
                 continue;
             }
 
-            if (line[pos] == '/' && pos + 1 < line.size())
-                if (line[pos + 1] == '/') break;
+            if (c == '/' || c == '*') break;
 
-            if (holder.is_symbol(line[pos]) || line[pos] == '.') {
-                res.push_back({holder.find(line[pos]),
+            if (holder.is_symbol(c)) {
+                if (c == '"') is_str = !is_str;
+                res.push_back({holder.find(c),
                                {abs, static_cast<uint16_t>(row),
                                 static_cast<uint32_t>(pos + 1)},
                                std::string(1, line[pos])});
@@ -40,9 +42,15 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
 
             size_t start = pos;
             while (pos < line.size()) {
-                if (line[pos] == '.') break;
-                if (std::isspace(line[pos]) || holder.is_symbol(line[pos]))
-                    break;
+                if (!is_str) {
+                    if (line[pos] == '.') break;
+                    if (std::isspace(line[pos]) || holder.is_symbol(line[pos]))
+                        break;
+                } else {
+                    if (line[pos] == '"') {
+                        break;
+                    }
+                }
 
                 pos++;
             }

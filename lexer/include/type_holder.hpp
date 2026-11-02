@@ -1,8 +1,8 @@
 #pragma once
 
-#include <set>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "token_type.hpp"
 
@@ -15,5 +15,5 @@ class TypeHolder {
 
    private:
     static const std::unordered_map<std::string_view, TokenType> src;
-    static const std::set<char>                                  symbols;
+    static const std::unordered_set<char>                        symbols;
 };

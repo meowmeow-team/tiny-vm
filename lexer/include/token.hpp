@@ -21,7 +21,7 @@ class Token {
     static std::string type_to_str(TokenType type) noexcept;
     static TokenType   str_to_type(const std::string& s) noexcept;
 
-   public:
+   private:
     TokenType   type;
     Position    pos;
     std::string lexeme;

@@ -23,8 +23,8 @@ const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"\"", TokenType::STRING_SYMBOL},  {".", TokenType::DOT},
     {";", TokenType::SEMICOLON},       {"/", TokenType::LINE_COMMENT}};
 
-const std::set<char> TypeHolder::symbols = {'{', '}', '(', ')',
-                                            '[', ']', '"', ';'};
+const std::unordered_set<char> TypeHolder::symbols = {'{', '}', '(', ')', '[',
+                                                      ']', '"', ';', '.'};
 
 TokenType TypeHolder::find(std::string_view word) noexcept {
     if (word.empty()) return TokenType::UNKNOWN;
