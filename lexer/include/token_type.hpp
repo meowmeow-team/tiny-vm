@@ -2,6 +2,7 @@
 
 enum class TokenType {
     KEYWORD,
+    KEYWORD_TYPE,
     IDENTIFIER,
     OPERATOR,
     NUMBER,

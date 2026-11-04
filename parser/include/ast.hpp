@@ -2,11 +2,21 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace AST {
 
-enum NodeType { BASE, VARIABLE, OPERATION, ASSIGN };
+enum NodeType {
+    BASE,
+    UNIT_DECL,
+    FUNC_DECL,
+    PARAM_DECL,
+    COMPOUND_STMT,
+    VARIABLE_DECL,
+    BINARY_OPERATION,
+    ASSIGN
+};
 
 struct Node {
     Node(NodeType type);
@@ -21,22 +31,46 @@ struct Node {
     std::vector<std::unique_ptr<Node>> kids;
 };
 
-struct Variable : public Node {
-    Variable();
-    ~Variable() = default;
+// root of the unit (ex. file)
+struct UnitDecl : public Node {
+    UnitDecl();
+    UnitDecl(const std::string& file_name);
+
+    std::string file_name;
+};
+
+// funcition declaration
+// contains: ref_idx - to the name,
+// ref_type - to the type, param structs in the kids
+struct FunctionDecl : public Node {
+    FunctionDecl();
+
+    uint32_t ref_type;
+};
+
+// param declaration inside the function
+// contains: ref_idx - to the name, ref_type - to the type
+struct ParamDecl : public Node {
+    ParamDecl();
+
+    uint32_t ref_type;
+};
+
+struct CompoundStmt : public Node {
+    CompoundStmt();
+};
+
+// variable declaration
+// contains ref to the type(token) and to the value (token)
+struct VariableDecl : public Node {
+    VariableDecl();
 
     uint32_t ref_type;  // identical shithole like the ref_idx, but this thing
                         // is a reference to the token with this variable type
 };
 
-struct Operation : public Node {
-    Operation();
-    ~Operation() = default;
-};
-
-struct Assign : public Node {
-    Assign();
-    ~Assign() = default;
+struct BinaryOperation : public Node {
+    BinaryOperation();
 };
 
 };  // namespace AST

@@ -8,6 +8,9 @@ add_subdirectory(lexer)
 
 add_executable(tiny-vm
     core/main.cpp
+    core/logger.cpp
+    core/exception.cpp
+    core/source_manager.cpp
 )
 
 target_link_libraries(tiny-vm PRIVATE lexer)

@@ -12,16 +12,26 @@ bool is_num(std::string_view s) noexcept {
 }  // namespace
 
 const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
-    {"public", TokenType::KEYWORD},    {"private", TokenType::KEYWORD},
-    {"protected", TokenType::KEYWORD}, {"class", TokenType::KEYWORD},
-    {"void", TokenType::KEYWORD},      {"bool", TokenType::KEYWORD},
-    {"byte", TokenType::KEYWORD},      {"int", TokenType::KEYWORD},
-    {"char", TokenType::KEYWORD},      {"float", TokenType::KEYWORD},
-    {"double", TokenType::KEYWORD},    {"=", TokenType::OPERATOR},
-    {"+", TokenType::OPERATOR},        {"-", TokenType::OPERATOR},
-    {"}", TokenType::SYMBOL},          {"{", TokenType::SYMBOL},
-    {"\"", TokenType::STRING_SYMBOL},  {".", TokenType::DOT},
-    {";", TokenType::SEMICOLON},       {"/", TokenType::LINE_COMMENT}};
+    {"public", TokenType::KEYWORD},
+    {"private", TokenType::KEYWORD},
+    {"protected", TokenType::KEYWORD},
+    {"class", TokenType::KEYWORD},
+    {"void", TokenType::KEYWORD_TYPE},
+    {"bool", TokenType::KEYWORD_TYPE},
+    {"byte", TokenType::KEYWORD_TYPE},
+    {"int", TokenType::KEYWORD_TYPE},
+    {"char", TokenType::KEYWORD_TYPE},
+    {"float", TokenType::KEYWORD_TYPE},
+    {"double", TokenType::KEYWORD_TYPE},
+    {"=", TokenType::OPERATOR},
+    {"+", TokenType::OPERATOR},
+    {"-", TokenType::OPERATOR},
+    {"}", TokenType::SYMBOL},
+    {"{", TokenType::SYMBOL},
+    {"\"", TokenType::STRING_SYMBOL},
+    {".", TokenType::DOT},
+    {";", TokenType::SEMICOLON},
+    {"/", TokenType::LINE_COMMENT}};
 
 const std::unordered_set<char> TypeHolder::symbols = {'{', '}', '(', ')', '[',
                                                       ']', '"', ';', '.'};
