@@ -56,8 +56,13 @@ struct ParamDecl : public Node {
     uint32_t ref_type;
 };
 
+// body of the fucntion, like  { ... }
 struct CompoundStmt : public Node {
     CompoundStmt();
+};
+
+struct AssignStmt : public Node {
+    AssignStmt();
 };
 
 // variable declaration
@@ -67,6 +72,12 @@ struct VariableDecl : public Node {
 
     uint32_t ref_type;  // identical shithole like the ref_idx, but this thing
                         // is a reference to the token with this variable type
+};
+
+// just a reference to the another variable
+// contains as a ref_idx, but this is not a reference to previous token
+struct RefVarDecl : public Node {
+    RefVarDecl();
 };
 
 struct BinaryOperation : public Node {

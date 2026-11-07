@@ -8,6 +8,7 @@ enum class TokenType {
     NUMBER,
     LINE_COMMENT,
     SYMBOL,
+    SYMBOL_ASSIGN,  // TODO
     STRING_SYMBOL,
     DOT,
     SEMICOLON,
