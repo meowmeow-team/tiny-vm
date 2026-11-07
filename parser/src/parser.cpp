@@ -248,4 +248,4 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
     idx++;
 }
 
-void Parser::parse_expression(uint32_t& idx, AST::AssignStmt& astmt) {}
+std::unique_ptr<AST::Node> Parser::parse_expression(uint32_t& idx) {}

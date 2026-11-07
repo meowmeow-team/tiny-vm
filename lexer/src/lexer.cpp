@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include "../../core/exception.hpp"
+
 Lexer::Lexer() : holder(), files_lexed(0) {}
 
 std::vector<Token> Lexer::load_file(const std::string& path) {
@@ -56,6 +58,10 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
             }
 
             std::string word = line.substr(start, pos - start);
+            auto        type = holder.find(word);
+            if (type == TokenType::UNKNOWN)
+                throw vm::tokenizing_error("unknown lexeme: ", word.c_str());
+
             res.push_back({holder.find(word),
                            {abs, static_cast<uint16_t>(row),
                             static_cast<uint32_t>(start + 1)},

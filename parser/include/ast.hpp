@@ -80,6 +80,10 @@ struct RefVarDecl : public Node {
     RefVarDecl();
 };
 
+struct IntLiteralDecl : public Node {
+    IntLiteralDecl();
+};
+
 struct BinaryOperation : public Node {
     BinaryOperation();
 };

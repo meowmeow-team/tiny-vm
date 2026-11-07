@@ -1,10 +1,19 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
 #include <string>
 
 namespace vm {
+
+class tokenizing_error : public std::exception {
+   public:
+    tokenizing_error(const char* msg, const char* word);
+
+    const char* what() const noexcept;
+
+   private:
+    std::string msg;
+};
 
 class syntax_error : public std::exception {
    public:

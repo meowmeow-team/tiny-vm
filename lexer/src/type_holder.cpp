@@ -4,11 +4,20 @@
 #include <cctype>
 
 namespace {
+
 bool is_num(std::string_view s) noexcept {
     return !s.empty() && std::all_of(s.begin(), s.end(), [](unsigned char c) {
         return std::isdigit(c);
     });
 }
+
+bool is_valid_identifier(std::string_view s) noexcept {
+    return !s.empty() && !std::isdigit(s[0]) &&
+           std::all_of(s.begin() + 1, s.end(), [](unsigned char c) {
+               return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+           });
+}
+
 }  // namespace
 
 const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
@@ -41,7 +50,10 @@ TokenType TypeHolder::find(std::string_view word) noexcept {
     if (is_num(word)) return TokenType::NUMBER;
 
     auto it = src.find(word);
-    if (it == src.end()) return TokenType::UNKNOWN;
+    if (it == src.end()) {
+        if (!is_valid_identifier(word)) return TokenType::UNKNOWN;
+        return TokenType::IDENTIFIER;
+    }
 
     return it->second;
 }

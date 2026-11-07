@@ -26,5 +26,5 @@ class Parser {
     void parse_func_body(uint32_t& idx, AST::FunctionDecl& func);
     void parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt);
     void parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt);
-    void parse_expression(uint32_t& idx, AST::AssignStmt& astmt);
+    std::unique_ptr<AST::Node> parse_expression(uint32_t& idx);
 };
