@@ -2,6 +2,10 @@
 
 #include "../../core/exception.hpp"
 
+std::unordered_map<const char*, uint8_t> Parser::pratt_priorities = {
+    {"=", 1}, {"||", 2}, {"&&", 3}, {"==", 4}, {"!=", 4}, {"<", 5},
+    {">", 5}, {"+", 6},  {"-", 6},  {"*", 7},  {"/", 7}};
+
 Parser::Parser(SourceManager& source_manager, Logger& logger)
     : source_manager(source_manager), logger(logger) {}
 
@@ -248,4 +252,42 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
     idx++;
 }
 
-std::unique_ptr<AST::Node> Parser::parse_expression(uint32_t& idx) {}
+// TODO make it possible to call some functions
+std::unique_ptr<AST::Node> Parser::pratt_parse(uint32_t& idx,
+                                               uint8_t   priority) {
+    std::unique_ptr<AST::Node> fuck = nullptr;
+
+    const auto& token = source_manager.get(idx);
+    auto        type = token.get_type();
+    if (type == TokenType::IDENTIFIER) {
+        fuck = std::make_unique<AST::RefVarDecl>();
+        fuck->ref_idx = idx++;
+    } else if (type == TokenType::NUMBER) {
+        fuck = std::make_unique<AST::VariableDecl>();
+        fuck->ref_idx = idx++;
+    } else
+        throw vm::syntax_error("pratt expected variable or identifier",
+                               token.get_pos().row);
+
+    while (idx < source_manager.size()) {
+        const auto& t = source_manager.get(idx);
+        if (t.get_lexeme() == ";") break;
+
+        auto it = pratt_priorities.find(t.get_lexeme().c_str());
+        if (it == pratt_priorities.end() || it->second <= priority) break;
+
+        uint32_t op_idx = idx++;
+
+        auto rhs = pratt_parse(idx, it->second - 1);
+
+        std::unique_ptr<AST::BinaryOperation> op =
+            std::make_unique<AST::BinaryOperation>();
+        op->ref_idx = op_idx;
+        op->kids.push_back(std::move(fuck));
+        op->kids.push_back(std::move(rhs));
+
+        fuck = std::move(op);
+    }
+
+    return fuck;
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "../../core/logger.hpp"
 #include "../../core/source_manager.hpp"
 #include "ast.hpp"
@@ -19,6 +21,9 @@ class Parser {
             // <return-type> <name>(<param-type> <param-name>...)
 
    private:
+    static std::unordered_map<const char*, uint8_t> pratt_priorities;
+
+   private:
     std::unique_ptr<AST::FunctionDecl> parse_func(uint32_t& idx);
     void parse_func_def(uint32_t& idx, AST::FunctionDecl& func);
     std::vector<std::unique_ptr<AST::ParamDecl>> parse_func_params(
@@ -26,5 +31,7 @@ class Parser {
     void parse_func_body(uint32_t& idx, AST::FunctionDecl& func);
     void parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt);
     void parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt);
-    std::unique_ptr<AST::Node> parse_expression(uint32_t& idx);
+    std::unique_ptr<AST::Node> pratt_parse(
+        uint32_t& idx,
+        uint8_t   priority);  // pratt parsing algortihgm
 };
