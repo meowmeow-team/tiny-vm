@@ -37,6 +37,7 @@ std::unique_ptr<AST::FunctionDecl> Parser::parse_func(uint32_t& idx) {
 
         auto params = parse_func_params(idx);
         func->kids.insert(func->kids.end(), params.begin(), params.end());
+        parse_func_body(idx, *func);
     } catch (const vm::syntax_error& e) {
         logger.log(Logger::ERROR, "func parsing pipeline failed:\n", e.what());
         throw;
@@ -159,22 +160,14 @@ void Parser::parse_func_body(uint32_t& idx, AST::FunctionDecl& func) {
         const auto& token = source_manager.get(idx);
         auto        type = token.get_type();
 
-        switch (type) {
-            case TokenType::SYMBOL:
-                if (token.get_lexeme() == "}") {
-                    func.kids.push_back(std::move(c_stmt));
-                    idx++;
-                    return;
-                }
-                break;
-            case TokenType::IDENTIFIER:
-            case TokenType::KEYWORD_TYPE:
-                parse_func_decl(idx, *c_stmt);
-                break;
-            // TODO parsing if stmt, while/for loops
-            default:
-                throw vm::syntax_error("func body parsing failed",
-                                       token.get_pos().row);
+        if (type == TokenType::SYMBOL) {
+            if (token.get_lexeme() == "}") {
+                func.kids.push_back(std::move(c_stmt));
+                idx++;
+                return;
+            }
+        } else {
+            parse_func_decl(idx, *c_stmt);
         }
 
         idx++;
@@ -187,7 +180,9 @@ void Parser::parse_func_body(uint32_t& idx, AST::FunctionDecl& func) {
 //          int a = func();
 //          b = 20;
 //          b = a;
-//          func(); -> parse_func_call
+//          TODO func(); -> parse_func_call
+//          TODO for(...)
+//          TODO while(...)
 void Parser::parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt) {
     if (idx >= source_manager.size()) throw vm::syntax_error("end of file", 0);
 
@@ -250,6 +245,10 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
     if (at_type != TokenType::SYMBOL_ASSIGN)
         throw vm::syntax_error("expected assign symbol bro", at.get_pos().row);
     idx++;
+
+    auto expression = pratt_parse(idx, 0);
+    astmt->kids.push_back(std::move(expression));
+    cstmt.kids.push_back(std::move(astmt));
 }
 
 // TODO make it possible to call some functions
