@@ -25,12 +25,13 @@ AST::UnitDecl Parser::parse_unit(const std::string& file_name) {
 }
 
 std::unique_ptr<AST::FunctionDecl> Parser::parse_func(uint32_t& idx) {
-    if (idx >= source_manager.size() ||
-        source_manager.size() - idx < MIN_FUNC_DECL + 2) {
-        uint32_t row = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().row : 0;
-        uint32_t col = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().column : 0;
-        throw vm::syntax_error("func syntax parsing error", row, col);
-    }
+    if (idx >= source_manager.size())
+        throw vm::syntax_error("unexpected end of file", 0, 0);
+
+    if (source_manager.size() - idx < MIN_FUNC_DECL + 2)
+        throw vm::syntax_error("func syntax parsing error",
+                               source_manager.get(idx).get_pos().row,
+                               source_manager.get(idx).get_pos().column);
 
     std::unique_ptr<AST::FunctionDecl> func =
         std::make_unique<AST::FunctionDecl>();
@@ -253,12 +254,14 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
 
     auto expression = pratt_parse(idx, 0);
     astmt->kids.push_back(std::move(expression));
-    if (idx >= source_manager.size() || 
-        source_manager.get(idx).get_type() != TokenType::SEMICOLON) {
-        uint32_t r = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().row : 0;
-        uint32_t c = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().column : 0;
-        throw vm::syntax_error("expected ';' after expression", r, c);
-    }
+
+    if (idx >= source_manager.size())
+        throw vm::syntax_error("unexpected end of file", 0, 0);
+    if (source_manager.get(idx).get_type() != TokenType::SEMICOLON)
+        throw vm::syntax_error("expected semiclon after the expression",
+                               source_manager.get(idx).get_pos().row,
+                               source_manager.get(idx).get_pos().column);
+
     idx++;
     cstmt.kids.push_back(std::move(astmt));
 }

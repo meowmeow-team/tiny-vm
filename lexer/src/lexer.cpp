@@ -7,14 +7,10 @@
 Lexer::Lexer() : holder(), files_lexed(0) {}
 
 std::vector<Token> Lexer::load_file(const std::string& path) {
-    if (path.empty()) {
-        throw vm::io_error("file path is empty");
-    }
+    if (path.empty()) throw vm::io_error("file path is empty");
 
     std::ifstream file(path);
-    if (!file.is_open()) {
-        throw vm::io_error("unable to open file: " + path);
-    }
+    if (!file.is_open()) throw vm::io_error("unable to open file: " + path);
 
     std::vector<Token> res{};
 

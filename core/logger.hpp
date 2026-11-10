@@ -35,7 +35,8 @@ class Logger {
         std::ostringstream msg_ss;
         (msg_ss << ... << args);
 
-        std::string msg = date_ss.str() + " [" + type_msgs[type] + "] -> " + msg_ss.str();
+        std::string msg =
+            date_ss.str() + " [" + type_msgs[type] + "] -> " + msg_ss.str();
 
         if (in_file) {
             file << msg << "\n";

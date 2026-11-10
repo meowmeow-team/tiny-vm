@@ -13,7 +13,7 @@ bool is_num(std::string_view s) noexcept {
 
 bool is_valid_identifier(std::string_view s) noexcept {
     if (s.empty()) return false;
-    
+
     unsigned char first = static_cast<unsigned char>(s[0]);
     if (!std::isalpha(first) && first != '_') return false;
 
@@ -21,7 +21,7 @@ bool is_valid_identifier(std::string_view s) noexcept {
         return std::isalnum(c) || c == '_';
     });
 }
-} //namespace
+}  // namespace
 
 const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"public", TokenType::KEYWORD},
