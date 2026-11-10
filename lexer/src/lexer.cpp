@@ -16,7 +16,9 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
 
     size_t   row = 0;
     uint32_t abs = 0;
-    bool     is_str = false;
+
+    bool        is_str = false;
+    std::string str = "";
 
     std::string line;
     while (std::getline(file, line)) {
@@ -50,11 +52,22 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
                         break;
                 } else {
                     if (line[pos] == '"') {
+                        str = line.substr(start, pos - start);
                         break;
                     }
                 }
 
                 pos++;
+            }
+
+            if (!str.empty()) {
+                res.push_back({TokenType::STRING_LITERAL,
+                               {abs, static_cast<uint16_t>(row),
+                                static_cast<uint32_t>(start + 1)},
+                               str});
+                str.clear();
+                abs += pos - start;
+                continue;
             }
 
             std::string word = line.substr(start, pos - start);

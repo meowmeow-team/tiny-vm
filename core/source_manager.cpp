@@ -5,7 +5,7 @@
 SourceManager::SourceManager(std::vector<Token> tokens) : tokens() {
     if (tokens.size() == 0)
         throw std::invalid_argument("tokens vector is empty");
-    tokens = std::move(tokens);
+    this->tokens = std::move(tokens);
 }
 
 const std::vector<Token>& SourceManager::get_src() const noexcept {

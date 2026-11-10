@@ -17,7 +17,7 @@ class tokenizing_error : public std::exception {
 
 class syntax_error : public std::exception {
    public:
-    syntax_error(const char* msg, uint32_t row);
+    syntax_error(const char* msg, uint32_t row, uint32_t col);
 
     const char* what() const noexcept;
 

@@ -21,13 +21,13 @@ class Parser {
             // <return-type> <name>(<param-type> <param-name>...)
 
    private:
-    static std::unordered_map<const char*, uint8_t> pratt_priorities;
+    static std::unordered_map<std::string, uint8_t> pratt_priorities;
 
    private:
     std::unique_ptr<AST::FunctionDecl> parse_func(uint32_t& idx);
     void parse_func_def(uint32_t& idx, AST::FunctionDecl& func);
-    std::vector<std::unique_ptr<AST::ParamDecl>> parse_func_params(
-        uint32_t& idx);
+    void parse_func_params(uint32_t&                                idx,
+                           std::vector<std::unique_ptr<AST::Node>>& res);
     void parse_func_body(uint32_t& idx, AST::FunctionDecl& func);
     void parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt);
     void parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt);

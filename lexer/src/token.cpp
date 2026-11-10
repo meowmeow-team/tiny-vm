@@ -25,12 +25,15 @@ std::ostream& operator<<(std::ostream& out, const Token& token) noexcept {
 std::string Token::type_to_str(TokenType type) noexcept {
     static std::unordered_map<TokenType, const char*> map = {
         {TokenType::KEYWORD, "KEYWORD"},
+        {TokenType::KEYWORD_TYPE, "KEYWORD_TYPE"},
         {TokenType::IDENTIFIER, "IDENTIFIER"},
         {TokenType::OPERATOR, "OPERATOR"},
         {TokenType::NUMBER, "NUMBER"},
         {TokenType::LINE_COMMENT, "LINE_COMMENT"},
         {TokenType::SYMBOL, "SYMBOL"},
+        {TokenType::SYMBOL_ASSIGN, "SYMBOL_ASSIGN"},
         {TokenType::STRING_SYMBOL, "STRING_SYMBOL"},
+        {TokenType::STRING_LITERAL, "STRING_LITERAL"},
         {TokenType::DOT, "DOT"},
         {TokenType::SEMICOLON, "SEMICOLON"},
         {TokenType::UNKNOWN, "UNKNOWN"}};
@@ -48,12 +51,15 @@ TokenType Token::str_to_type(const std::string& s) noexcept {
 
     static std::unordered_map<const char*, TokenType> map = {
         {"KEYWORD", TokenType::KEYWORD},
+        {"KEYWORD_TYPE", TokenType::KEYWORD_TYPE},
         {"IDENTIFIER", TokenType::IDENTIFIER},
         {"OPERATOR", TokenType::OPERATOR},
         {"NUMBER", TokenType::NUMBER},
         {"LINE_COMMENT", TokenType::LINE_COMMENT},
         {"SYMBOL", TokenType::SYMBOL},
+        {"SYMBOL_ASSIGN", TokenType::SYMBOL_ASSIGN},
         {"STRING_SYMBOL", TokenType::STRING_SYMBOL},
+        {"STRING_LITERAL", TokenType::STRING_LITERAL},
         {"DOT", TokenType::DOT},
         {"SEMICOLON", TokenType::SEMICOLON},
         {"UNKNOWN", TokenType::UNKNOWN}};

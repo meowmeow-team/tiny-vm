@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 
 namespace {
 
@@ -32,9 +33,11 @@ const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"char", TokenType::KEYWORD_TYPE},
     {"float", TokenType::KEYWORD_TYPE},
     {"double", TokenType::KEYWORD_TYPE},
-    {"=", TokenType::OPERATOR},
+    {"=", TokenType::SYMBOL_ASSIGN},
     {"+", TokenType::OPERATOR},
     {"-", TokenType::OPERATOR},
+    {"(", TokenType::SYMBOL},
+    {")", TokenType::SYMBOL},
     {"}", TokenType::SYMBOL},
     {"{", TokenType::SYMBOL},
     {"\"", TokenType::STRING_SYMBOL},

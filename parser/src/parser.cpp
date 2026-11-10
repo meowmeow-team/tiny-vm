@@ -2,7 +2,7 @@
 
 #include "../../core/exception.hpp"
 
-std::unordered_map<const char*, uint8_t> Parser::pratt_priorities = {
+std::unordered_map<std::string, uint8_t> Parser::pratt_priorities = {
     {"=", 1}, {"||", 2}, {"&&", 3}, {"==", 4}, {"!=", 4}, {"<", 5},
     {">", 5}, {"+", 6},  {"-", 6},  {"*", 7},  {"/", 7}};
 
@@ -16,17 +16,19 @@ AST::UnitDecl Parser::parse_unit(const std::string& file_name) {
     uint32_t idx = 0;
     while (idx < source_manager.size()) {
         std::unique_ptr<AST::FunctionDecl> func = parse_func(idx);
-        unit.kids.push_back(std::move(func));
+        if (func) unit.kids.push_back(std::move(func));
+        idx++;
     }
 
-    return unit;
+    return std::move(unit);
 }
 
 std::unique_ptr<AST::FunctionDecl> Parser::parse_func(uint32_t& idx) {
     if (idx > source_manager.size() ||
         source_manager.size() - idx < MIN_FUNC_DECL + 2)
         throw vm::syntax_error("func syntax parsing error",
-                               source_manager.get(idx).get_pos().row);
+                               source_manager.get(idx).get_pos().row,
+                               source_manager.get(idx).get_pos().column);
 
     std::unique_ptr<AST::FunctionDecl> func =
         std::make_unique<AST::FunctionDecl>();
@@ -34,9 +36,7 @@ std::unique_ptr<AST::FunctionDecl> Parser::parse_func(uint32_t& idx) {
     // function parsing pipeline lol (kms)
     try {
         parse_func_def(idx, *func);
-
-        auto params = parse_func_params(idx);
-        func->kids.insert(func->kids.end(), params.begin(), params.end());
+        parse_func_params(idx, func->kids);
         parse_func_body(idx, *func);
     } catch (const vm::syntax_error& e) {
         logger.log(Logger::ERROR, "func parsing pipeline failed:\n", e.what());
@@ -56,42 +56,42 @@ void Parser::parse_func_def(uint32_t& idx, AST::FunctionDecl& func) {
                 if (token.get_type() != TokenType::KEYWORD_TYPE)
                     throw vm::syntax_error(
                         "func parsing: first one is not a keyword",
-                        token.get_pos().row);
+                        token.get_pos().row, token.get_pos().column);
                 func.ref_type = idx;
                 break;
             case 1:
                 if (token.get_type() != TokenType::IDENTIFIER)
                     throw vm::syntax_error(
                         "func parsing: second one is not an identifier",
-                        token.get_pos().row);
+                        token.get_pos().row, token.get_pos().column);
 
                 func.ref_idx = idx;
                 break;
             case 2:
                 if (token.get_type() != TokenType::SYMBOL)
                     throw vm::syntax_error("func parsing: there is no ()",
-                                           token.get_pos().row);
+                                           token.get_pos().row,
+                                           token.get_pos().column);
                 if (token.get_lexeme()[0] != '(')
                     throw vm::syntax_error("func parsing: wrong symbol",
-                                           token.get_pos().row);
+                                           token.get_pos().row,
+                                           token.get_pos().column);
                 idx++;
                 return;
             default:
-                throw vm::syntax_error("func def parsing ub", idx);
+                throw vm::syntax_error("func def parsing ub", 0, 0);
         }
 
         words++;
         idx++;
     }
 
-    throw vm::syntax_error("func def parsing failed", idx);
+    throw vm::syntax_error("func def parsing failed", 0, 0);
 }
 
 // example: int a, int b)
-std::vector<std::unique_ptr<AST::ParamDecl>> Parser::parse_func_params(
-    uint32_t& idx) {
-    std::vector<std::unique_ptr<AST::ParamDecl>> res{};
-
+void Parser::parse_func_params(uint32_t&                                idx,
+                               std::vector<std::unique_ptr<AST::Node>>& res) {
     bool     has_type = false;
     uint32_t temp_idx = 0;
 
@@ -103,7 +103,7 @@ std::vector<std::unique_ptr<AST::ParamDecl>> Parser::parse_func_params(
             if (type != TokenType::IDENTIFIER)
                 throw vm::syntax_error(
                     "func pars parsing: variable without name",
-                    token.get_pos().row);
+                    token.get_pos().row, token.get_pos().column);
 
             std::unique_ptr<AST::ParamDecl> param =
                 std::make_unique<AST::ParamDecl>();
@@ -119,16 +119,17 @@ std::vector<std::unique_ptr<AST::ParamDecl>> Parser::parse_func_params(
                     continue;
                 } else if (token.get_lexeme()[0] == ')') {
                     idx++;
-                    return std::move(res);
+                    return;
                 }
                 throw vm::syntax_error("func pars parsing: wrong symbol",
-                                       token.get_pos().row);
+                                       token.get_pos().row,
+                                       token.get_pos().column);
             }
 
             if (type != TokenType::KEYWORD_TYPE)
                 throw vm::syntax_error(
                     "func pars parsing: variable without type",
-                    token.get_pos().row);
+                    token.get_pos().row, token.get_pos().column);
 
             temp_idx = idx;
             has_type = true;
@@ -137,7 +138,7 @@ std::vector<std::unique_ptr<AST::ParamDecl>> Parser::parse_func_params(
         idx++;
     }
 
-    throw vm::syntax_error("func pars parsing failed", idx);
+    throw vm::syntax_error("func pars parsing failed", 0, 0);
 }
 
 // example: {
@@ -153,7 +154,7 @@ void Parser::parse_func_body(uint32_t& idx, AST::FunctionDecl& func) {
     const auto& s = source_manager.get(idx);
     if (s.get_type() != TokenType::SYMBOL || s.get_lexeme() != "{")
         throw vm::syntax_error("func body parsing: there is no {",
-                               s.get_pos().row);
+                               s.get_pos().row, s.get_pos().column);
     idx++;
 
     while (idx < source_manager.size()) {
@@ -173,7 +174,7 @@ void Parser::parse_func_body(uint32_t& idx, AST::FunctionDecl& func) {
         idx++;
     }
 
-    throw vm::syntax_error("func body parsing failed", idx);
+    throw vm::syntax_error("func body parsing failed", 0, 0);
 }
 
 // example: int a = 10;
@@ -184,7 +185,8 @@ void Parser::parse_func_body(uint32_t& idx, AST::FunctionDecl& func) {
 //          TODO for(...)
 //          TODO while(...)
 void Parser::parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt) {
-    if (idx >= source_manager.size()) throw vm::syntax_error("end of file", 0);
+    if (idx >= source_manager.size())
+        throw vm::syntax_error("end of file", 0, 0);
 
     const auto& token = source_manager.get(idx);
     auto        type = token.get_type();
@@ -205,7 +207,7 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
         std::make_unique<AST::AssignStmt>();
 
     if (idx >= source_manager.size())
-        throw vm::syntax_error("incorrect end of file", 0);
+        throw vm::syntax_error("incorrect end of file", 0, 0);
 
     // left side of assigning operation
     const auto& f = source_manager.get(idx);
@@ -213,12 +215,13 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
         // int a = ...
         const uint32_t idx_type = idx++;
         if (idx >= source_manager.size())
-            throw vm::syntax_error("no variable name", f.get_pos().row);
+            throw vm::syntax_error("no variable name", f.get_pos().row,
+                                   f.get_pos().column);
 
         const auto& n = source_manager.get(idx);
         if (n.get_type() != TokenType::IDENTIFIER)
             throw vm::syntax_error("no variable name was found",
-                                   f.get_pos().row);
+                                   f.get_pos().row, f.get_pos().column);
 
         auto var = std::make_unique<AST::VariableDecl>();
         var->ref_type = idx_type;
@@ -233,17 +236,20 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
         astmt->kids.push_back(std::move(ref_var));
         idx++;
     } else {
-        throw vm::syntax_error("expected var decl", f.get_pos().row);
+        throw vm::syntax_error("expected var decl", f.get_pos().row,
+                               f.get_pos().column);
     }
 
     if (idx >= source_manager.size())
-        throw vm::syntax_error("expected assgin symbol", f.get_pos().row);
+        throw vm::syntax_error("expected assgin symbol", f.get_pos().row,
+                               f.get_pos().column);
 
     const auto& at = source_manager.get(idx);
     auto        at_type = at.get_type();
 
     if (at_type != TokenType::SYMBOL_ASSIGN)
-        throw vm::syntax_error("expected assign symbol bro", at.get_pos().row);
+        throw vm::syntax_error("expected assign symbol bro", at.get_pos().row,
+                               at.get_pos().column);
     idx++;
 
     auto expression = pratt_parse(idx, 0);
@@ -266,13 +272,13 @@ std::unique_ptr<AST::Node> Parser::pratt_parse(uint32_t& idx,
         fuck->ref_idx = idx++;
     } else
         throw vm::syntax_error("pratt expected variable or identifier",
-                               token.get_pos().row);
+                               token.get_pos().row, token.get_pos().column);
 
     while (idx < source_manager.size()) {
         const auto& t = source_manager.get(idx);
         if (t.get_lexeme() == ";") break;
 
-        auto it = pratt_priorities.find(t.get_lexeme().c_str());
+        auto it = pratt_priorities.find(t.get_lexeme());
         if (it == pratt_priorities.end() || it->second <= priority) break;
 
         uint32_t op_idx = idx++;

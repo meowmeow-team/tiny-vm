@@ -1,8 +1,5 @@
 
-
 void main(){
-    System.print("im gonna fucking kill myself");
-
     int a = 10;
 }
 

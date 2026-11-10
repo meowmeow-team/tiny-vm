@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(lexer)
+add_subdirectory(parser)
 
 add_executable(tiny-vm
     core/main.cpp
@@ -14,3 +15,4 @@ add_executable(tiny-vm
 )
 
 target_link_libraries(tiny-vm PRIVATE lexer)
+target_link_libraries(tiny-vm PRIVATE parser)

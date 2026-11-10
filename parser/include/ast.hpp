@@ -8,19 +8,27 @@
 namespace AST {
 
 enum NodeType {
-    BASE,
+    BASE,  // 0
     UNIT_DECL,
     FUNC_DECL,
     PARAM_DECL,
     COMPOUND_STMT,
+    ASSIGN_STMT,  // 5
     VARIABLE_DECL,
-    BINARY_OPERATION,
-    ASSIGN
+    REF_VAR_DECL,
+    INT_LITERAL_DECL,
+    BINARY_OPERATION,  // 9
 };
 
 struct Node {
     Node(NodeType type);
     virtual ~Node() = default;
+
+    Node(const Node& other) = delete;
+    Node& operator=(const Node& other) = delete;
+
+    Node(Node&& other) = default;
+    Node& operator=(Node&& other) noexcept = default;
 
     NodeType type;
     uint32_t ref_idx;  // an index of corresponding element (lexeme) in the
@@ -37,6 +45,10 @@ struct UnitDecl : public Node {
     UnitDecl(const std::string& file_name);
 
     std::string file_name;
+
+    // dumb debug thing
+    void print(UnitDecl* unit) const noexcept;
+    // TODO delete it then parser is gonna be ready, or make it cooler
 };
 
 // funcition declaration
