@@ -19,7 +19,7 @@ void UnitDecl::print(UnitDecl* unit) const noexcept {
     std::queue<AST::Node*>  qe;
     qe.push(unit);
     while (!qe.empty()) {
-        AST::Node* n = qe.back();
+        AST::Node* n = qe.front();
         qe.pop();
         for (size_t i = 0; i < n->kids.size(); i++) {
             res.push_back(n->kids[i].get());

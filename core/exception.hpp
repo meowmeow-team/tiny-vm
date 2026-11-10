@@ -1,28 +1,36 @@
 #pragma once
-
 #include <cstdint>
+#include <exception>
 #include <string>
 
 namespace vm {
 
-class tokenizing_error : public std::exception {
-   public:
-    tokenizing_error(const char* msg, const char* word);
+// Базовый класс для всех ошибок виртуальной машины
+class vm_error : public std::exception {
+public:
+    explicit vm_error(std::string message);
+    [[nodiscard]] const char* what() const noexcept override;
 
-    const char* what() const noexcept;
-
-   private:
+protected:
     std::string msg;
 };
 
-class syntax_error : public std::exception {
-   public:
-    syntax_error(const char* msg, uint32_t row, uint32_t col);
+// Ошибка ввода-вывода (не удалось открыть файл, пустой путь)
+class io_error : public vm_error {
+public:
+    explicit io_error(const std::string& message);
+};
 
-    const char* what() const noexcept;
+// Ошибка токенизации в лексере
+class tokenizing_error : public vm_error {
+public:
+    tokenizing_error(const char* message, const char* word);
+};
 
-   private:
-    std::string msg;
+// Ошибка разбора грамматики в парсере
+class syntax_error : public vm_error {
+public:
+    syntax_error(const char* message, uint32_t row, uint32_t col);
 };
 
 }  // namespace vm

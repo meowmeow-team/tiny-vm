@@ -16,19 +16,21 @@ AST::UnitDecl Parser::parse_unit(const std::string& file_name) {
     uint32_t idx = 0;
     while (idx < source_manager.size()) {
         std::unique_ptr<AST::FunctionDecl> func = parse_func(idx);
-        if (func) unit.kids.push_back(std::move(func));
-        idx++;
+        if (func) {
+            unit.kids.push_back(std::move(func));
+        }
     }
 
-    return std::move(unit);
+    return unit;
 }
 
 std::unique_ptr<AST::FunctionDecl> Parser::parse_func(uint32_t& idx) {
-    if (idx > source_manager.size() ||
-        source_manager.size() - idx < MIN_FUNC_DECL + 2)
-        throw vm::syntax_error("func syntax parsing error",
-                               source_manager.get(idx).get_pos().row,
-                               source_manager.get(idx).get_pos().column);
+    if (idx >= source_manager.size() ||
+        source_manager.size() - idx < MIN_FUNC_DECL + 2) {
+        uint32_t row = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().row : 0;
+        uint32_t col = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().column : 0;
+        throw vm::syntax_error("func syntax parsing error", row, col);
+    }
 
     std::unique_ptr<AST::FunctionDecl> func =
         std::make_unique<AST::FunctionDecl>();
@@ -167,11 +169,8 @@ void Parser::parse_func_body(uint32_t& idx, AST::FunctionDecl& func) {
                 idx++;
                 return;
             }
-        } else {
-            parse_func_decl(idx, *c_stmt);
         }
-
-        idx++;
+        parse_func_decl(idx, *c_stmt);
     }
 
     throw vm::syntax_error("func body parsing failed", 0, 0);
@@ -254,6 +253,13 @@ void Parser::parse_func_assign(uint32_t& idx, AST::CompoundStmt& cstmt) {
 
     auto expression = pratt_parse(idx, 0);
     astmt->kids.push_back(std::move(expression));
+    if (idx >= source_manager.size() || 
+        source_manager.get(idx).get_type() != TokenType::SEMICOLON) {
+        uint32_t r = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().row : 0;
+        uint32_t c = (idx < source_manager.size()) ? source_manager.get(idx).get_pos().column : 0;
+        throw vm::syntax_error("expected ';' after expression", r, c);
+    }
+    idx++;
     cstmt.kids.push_back(std::move(astmt));
 }
 
@@ -268,7 +274,7 @@ std::unique_ptr<AST::Node> Parser::pratt_parse(uint32_t& idx,
         fuck = std::make_unique<AST::RefVarDecl>();
         fuck->ref_idx = idx++;
     } else if (type == TokenType::NUMBER) {
-        fuck = std::make_unique<AST::VariableDecl>();
+        fuck = std::make_unique<AST::IntLiteralDecl>();
         fuck->ref_idx = idx++;
     } else
         throw vm::syntax_error("pratt expected variable or identifier",

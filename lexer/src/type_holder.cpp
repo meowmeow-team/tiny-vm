@@ -5,7 +5,6 @@
 #include <iostream>
 
 namespace {
-
 bool is_num(std::string_view s) noexcept {
     return !s.empty() && std::all_of(s.begin(), s.end(), [](unsigned char c) {
         return std::isdigit(c);
@@ -13,13 +12,16 @@ bool is_num(std::string_view s) noexcept {
 }
 
 bool is_valid_identifier(std::string_view s) noexcept {
-    return !s.empty() && !std::isdigit(s[0]) &&
-           std::all_of(s.begin() + 1, s.end(), [](unsigned char c) {
-               return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-           });
-}
+    if (s.empty()) return false;
+    
+    unsigned char first = static_cast<unsigned char>(s[0]);
+    if (!std::isalpha(first) && first != '_') return false;
 
-}  // namespace
+    return std::all_of(s.begin() + 1, s.end(), [](unsigned char c) {
+        return std::isalnum(c) || c == '_';
+    });
+}
+} //namespace
 
 const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"public", TokenType::KEYWORD},
@@ -36,6 +38,7 @@ const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"=", TokenType::SYMBOL_ASSIGN},
     {"+", TokenType::OPERATOR},
     {"-", TokenType::OPERATOR},
+    {"*", TokenType::OPERATOR},
     {"(", TokenType::SYMBOL},
     {")", TokenType::SYMBOL},
     {"}", TokenType::SYMBOL},
@@ -43,7 +46,15 @@ const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"\"", TokenType::STRING_SYMBOL},
     {".", TokenType::DOT},
     {";", TokenType::SEMICOLON},
-    {"/", TokenType::LINE_COMMENT}};
+    {"==", TokenType::OPERATOR},
+    {"!=", TokenType::OPERATOR},
+    {"<", TokenType::OPERATOR},
+    {">", TokenType::OPERATOR},
+    {"&&", TokenType::OPERATOR},
+    {"||", TokenType::OPERATOR},
+    {"/", TokenType::OPERATOR},
+    {"[", TokenType::SYMBOL},
+    {"]", TokenType::SYMBOL}};
 
 const std::unordered_set<char> TypeHolder::symbols = {'{', '}', '(', ')', '[',
                                                       ']', '"', ';', '.'};
