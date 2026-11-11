@@ -7,10 +7,10 @@
 Lexer::Lexer() : holder(), files_lexed(0) {}
 
 std::vector<Token> Lexer::load_file(const std::string& path) {
-    if (path.empty()) return {};
+    if (path.empty()) throw vm::io_error("file path is empty");
 
     std::ifstream file(path);
-    if (!file.is_open()) return {};
+    if (!file.is_open()) throw vm::io_error("unable to open file: " + path);
 
     std::vector<Token> res{};
 
@@ -29,10 +29,13 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
             unsigned char c = line[pos];
             if (std::isspace(c)) {
                 pos++;
+                abs++;
                 continue;
             }
 
-            if (c == '/' || c == '*') break;
+            if (c == '/' && pos + 1 < line.size() && line[pos + 1] == '/') {
+                break;
+            }
 
             if (holder.is_symbol(c)) {
                 if (c == '"') is_str = !is_str;
@@ -41,6 +44,7 @@ std::vector<Token> Lexer::load_file(const std::string& path) {
                                 static_cast<uint32_t>(pos + 1)},
                                std::string(1, line[pos])});
                 pos++;
+                abs++;
                 continue;
             }
 
