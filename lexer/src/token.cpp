@@ -49,7 +49,7 @@ TokenType Token::str_to_type(const std::string& s) noexcept {
     std::string str = s;
     std::transform(s.begin(), s.end(), str.begin(), ::toupper);
 
-    static std::unordered_map<const char*, TokenType> map = {
+    static std::unordered_map<std::string_view, TokenType> map = {
         {"KEYWORD", TokenType::KEYWORD},
         {"KEYWORD_TYPE", TokenType::KEYWORD_TYPE},
         {"IDENTIFIER", TokenType::IDENTIFIER},
@@ -64,7 +64,7 @@ TokenType Token::str_to_type(const std::string& s) noexcept {
         {"SEMICOLON", TokenType::SEMICOLON},
         {"UNKNOWN", TokenType::UNKNOWN}};
 
-    auto it = map.find(str.c_str());
+    auto it = map.find(str);
     if (it == map.end()) return TokenType::UNKNOWN;
 
     return it->second;

@@ -29,13 +29,14 @@ class Logger {
         std::tm tm{};
         localtime_r(&time, &tm);
 
-        std::ostringstream ss;
-        ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-        std::string date = ss.str();
+        std::ostringstream date_ss;
+        date_ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
 
-        (ss << ... << args);
-        std::string msg = date + std::string(" [") + type_msgs[type] +
-                          std::string("] -> ") + ss.str();
+        std::ostringstream msg_ss;
+        (msg_ss << ... << args);
+
+        std::string msg =
+            date_ss.str() + " [" + type_msgs[type] + "] -> " + msg_ss.str();
 
         if (in_file) {
             file << msg << "\n";
