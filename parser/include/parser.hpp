@@ -34,4 +34,8 @@ class Parser {
     std::unique_ptr<AST::Node> pratt_parse(
         uint32_t& idx,
         uint8_t   priority);  // pratt parsing algortihgm
+    void parse_if(uint32_t& idx, AST::CompoundStmt& cstmt);
+    void parse_while(uint32_t& idx, AST::CompoundStmt& cstmt);
+    void parse_for(uint32_t& idx, AST::CompoundStmt& cstmt);
+    
 };

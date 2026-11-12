@@ -305,3 +305,27 @@ std::unique_ptr<AST::Node> Parser::pratt_parse(uint32_t& idx,
 
     return fuck;
 }
+
+void Parser::parse_if(uint32_t& idx, AST::CompoundStmt& cstmt) {
+    idx++; 
+
+    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != "(") {
+        throw vm::syntax_error("expected '(' after if", 0, 0);
+    }
+    idx++;
+
+    auto condition = pratt_parse(idx, 0);
+
+    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != ")") {
+        throw vm::syntax_error("expected ')' after if condition", 0, 0);
+    }
+    idx++;
+
+    auto body = parse_block(idx);
+
+    auto if_node = std::make_unique<AST::IfStmt>();
+    if_node->kids.push_back(std::move(condition));
+    if_node->kids.push_back(std::move(body));
+
+    cstmt.kids.push_back(std::move(if_node));
+}
