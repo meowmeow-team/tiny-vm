@@ -37,5 +37,6 @@ class Parser {
     void parse_if(uint32_t& idx, AST::CompoundStmt& cstmt);
     void parse_while(uint32_t& idx, AST::CompoundStmt& cstmt);
     void parse_for(uint32_t& idx, AST::CompoundStmt& cstmt);
-    
+    // wider, than parse_func_body, fucntion that parse blocks {...}
+    std::unique_ptr<AST::CompoundStmt> parse_block(uint32_t& idx);    
 };

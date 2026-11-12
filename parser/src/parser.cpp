@@ -151,30 +151,8 @@ void Parser::parse_func_params(uint32_t&                                idx,
 //     return c;
 // }
 void Parser::parse_func_body(uint32_t& idx, AST::FunctionDecl& func) {
-    std::unique_ptr<AST::CompoundStmt> c_stmt =
-        std::make_unique<AST::CompoundStmt>();
-
-    const auto& s = source_manager.get(idx);
-    if (s.get_type() != TokenType::SYMBOL || s.get_lexeme() != "{")
-        throw vm::syntax_error("func body parsing: there is no {",
-                               s.get_pos().row, s.get_pos().column);
-    idx++;
-
-    while (idx < source_manager.size()) {
-        const auto& token = source_manager.get(idx);
-        auto        type = token.get_type();
-
-        if (type == TokenType::SYMBOL) {
-            if (token.get_lexeme() == "}") {
-                func.kids.push_back(std::move(c_stmt));
-                idx++;
-                return;
-            }
-        }
-        parse_func_decl(idx, *c_stmt);
-    }
-
-    throw vm::syntax_error("func body parsing failed", 0, 0);
+    auto body = parse_block(idx);
+    func.kids.push_back(std::move(body));
 }
 
 // example: int a = 10;
@@ -191,11 +169,29 @@ void Parser::parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt) {
     const auto& token = source_manager.get(idx);
     auto        type = token.get_type();
 
+    if (type == TokenType::KEYWORD) {
+        if (token.get_lexeme() == "if") {
+            parse_if(idx, cstmt);
+            return;
+        }
+        if (token.get_lexeme() == "while") {
+            parse_while(idx, cstmt);
+            return;
+        }
+        if (token.get_lexeme() == "for") {
+            parse_for(idx, cstmt);
+            return;
+        }
+        
+        throw vm::syntax_error("unknown keyword in block", token.get_pos().row, token.get_pos().column);
+    }
+
     if (token.get_type() == TokenType::KEYWORD_TYPE ||
         token.get_type() == TokenType::IDENTIFIER) {
         parse_func_assign(idx, cstmt);
         return;
     }
+    throw vm::syntax_error("unexpected token in block", token.get_pos().row, token.get_pos().column);
 }
 
 // example: int a = 10;
@@ -328,4 +324,33 @@ void Parser::parse_if(uint32_t& idx, AST::CompoundStmt& cstmt) {
     if_node->kids.push_back(std::move(body));
 
     cstmt.kids.push_back(std::move(if_node));
+}
+
+std::unique_ptr<AST::CompoundStmt> Parser::parse_block(uint32_t& idx) {
+    auto block = std::make_unique<AST::CompoundStmt>();
+
+    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != "{") {
+        throw vm::syntax_error("expected '{' to start block", source_manager.get(idx).get_pos().row, 
+        source_manager.get(idx).get_pos().column);
+    }
+    idx++;
+
+    while (idx < source_manager.size()) {
+        if (source_manager.get(idx).get_lexeme() == "}") {
+            idx++;
+            return block;
+        }
+        parse_func_decl(idx, *block); 
+    }
+
+    throw vm::syntax_error("expected '}' to close block", 0, 0);
+}
+
+//ЗАглушки
+void Parser::parse_while(uint32_t& idx, AST::CompoundStmt& cstmt) {
+    throw vm::syntax_error("while is not implemented yet", source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
+}
+
+void Parser::parse_for(uint32_t& idx, AST::CompoundStmt& cstmt) {
+    throw vm::syntax_error("for is not implemented yet", source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
 }
