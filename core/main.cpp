@@ -6,8 +6,9 @@
 #include "source_manager.hpp"
 
 int main(void) {
-    const char* path = getenv("HOME");
-    std::string fr = std::string(path) + "/tiny-vm/code_example";
+    // const char* path = getenv("HOME");
+    // std::string fr = std::string(path) + "/tiny-vm/code_example";
+    std::string fr = "code_example";
 
     Logger log;
     log.enable_log_shell();

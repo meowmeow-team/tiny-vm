@@ -346,9 +346,29 @@ std::unique_ptr<AST::CompoundStmt> Parser::parse_block(uint32_t& idx) {
     throw vm::syntax_error("expected '}' to close block", 0, 0);
 }
 
-//ЗАглушки
 void Parser::parse_while(uint32_t& idx, AST::CompoundStmt& cstmt) {
-    throw vm::syntax_error("while is not implemented yet", source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
+    idx++;
+
+    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != "(") {
+        throw vm::syntax_error("expected '(' after while", 
+            source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
+    }
+    idx++; 
+    auto condition = pratt_parse(idx, 0);
+
+    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != ")") {
+        throw vm::syntax_error("expected ')' after while condition", 
+            source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
+    }
+    idx++; 
+
+    auto body = parse_block(idx);
+
+    auto while_node = std::make_unique<AST::WhileStmt>();
+    while_node->kids.push_back(std::move(condition)); 
+    while_node->kids.push_back(std::move(body));     
+
+    cstmt.kids.push_back(std::move(while_node));
 }
 
 void Parser::parse_for(uint32_t& idx, AST::CompoundStmt& cstmt) {
