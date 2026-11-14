@@ -1,40 +1,21 @@
 #include "../include/symbol_table.hpp"
 
 #include <iostream>
+#include <string_view>
 
 #include "../../core/exception.hpp"
 
-SymbolTable::SymbolTable() : src() {}
+SymbolTable::SymbolTable(bool kore_wa_global_desu_ka)
+    : src(), global_desu(kore_wa_global_desu_ka) {}
 
-void SymbolTable::push(const std::string& name, const SymbolMeta& meta) {
-    if (name.empty())
-        throw vm::symbol_table_error("failed to push: name is empty");
+void SymbolTable::push(const std::string& name, const Meta& meta) {
+    if (name.empty()) throw vm::symbol_table_error("name is empty");
 
     if (contains(name))
-        throw vm::symbol_table_error("failed to push: already has that name");
-    src.emplace(name, meta);
-}
-
-void SymbolTable::erase(const std::string& name, const SymbolMeta& meta) {
-    if (name.empty())
-        throw vm::symbol_table_error("failed to erase: name is empty");
-
-    auto it = src.find(name);
-    if (it == src.end())
         throw vm::symbol_table_error(
-            "failed to erase: there is no such a name");
+            "failed to push: already contains that shit");
 
-    src.erase(it);
-}
-
-const SymbolTable::SymbolMeta& SymbolTable::get(const std::string& name) const {
-    if (name.empty())
-        throw vm::symbol_table_error("failed to get: name is empty");
-
-    auto it = src.find(name);
-    if (it == src.end())
-        throw vm::symbol_table_error("failed to get: there is no such name");
-    return it->second;
+    src.emplace(name, meta);
 }
 
 bool SymbolTable::contains(const std::string& name) const noexcept {
@@ -43,25 +24,41 @@ bool SymbolTable::contains(const std::string& name) const noexcept {
 }
 
 bool SymbolTable::contains(const std::string& name,
-                           const SymbolMeta&  meta) const noexcept {
+                           const Meta&        meta) const noexcept {
     auto it = src.find(name);
     if (it == src.end()) return false;
 
     return it->second == meta;
 }
 
-SymbolTable::SymbolMeta SymbolTable::make_meta(const Token& token,
-                                               Group        group) {
-    if (token.get_type() != TokenType::KEYWORD ||
-        token.get_type() != TokenType::KEYWORD_TYPE)
-        throw vm::symbol_table_error("wrong token type");
+bool SymbolTable::contains(const std::string& name, Type type) const noexcept {
+    auto it = src.find(name);
+    if (it == src.end()) return false;
 
-    static const std::unordered_map<std::string, Type> map = {
+    return it->second.type == type;
+}
+
+bool SymbolTable::contains(const std::string& name,
+                           Group              group) const noexcept {
+    auto it = src.find(name);
+    if (it == src.end()) return false;
+
+    return it->second.group == group;
+}
+
+bool SymbolTable::is_global() const noexcept { return global_desu; }
+
+SymbolTable::Meta SymbolTable::make_meta(const Token& type, Group group) {
+    if (type.get_type() != TokenType::KEYWORD &&
+        type.get_type() != TokenType::KEYWORD_TYPE)
+        throw vm::symbol_table_error("failed to make meta: wrong type");
+
+    static const std::unordered_map<std::string_view, Type> map = {
         {"void", VOID}, {"int", INT}, {"char", CHAR}};
 
-    auto it = map.find(token.get_lexeme());
+    auto it = map.find(type.get_lexeme());
     if (it == map.end())
-        throw vm::symbol_table_error("unknown lexeme for meta");
+        throw vm::symbol_table_error("failed to make meta: unknown lexeme");
 
     return {it->second, group};
 }

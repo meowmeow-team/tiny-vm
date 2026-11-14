@@ -1,11 +1,11 @@
 #include "../include/analyzer.hpp"
 
-#include <stack>
+#include <istream>
 
 #include "../../core/exception.hpp"
 
 Analyzer::Analyzer(SourceManager& source_manager)
-    : source_manager(source_manager), is_func(false), is_assign(false) {}
+    : source_manager(source_manager), global_st(true) {}
 
 /*
  * example:
@@ -16,71 +16,151 @@ Analyzer::Analyzer(SourceManager& source_manager)
  * }
  * "
  */
-void Analyzer::process(AST::Node* node) {
-    if (!node) throw vm::semantic_error("node is nullptr");
 
-    // DFS
-    stack.push(node);
-    while (!stack.empty()) {
-        AST::Node* cur = stack.top();
-        stack.pop();
+void Analyzer::process_unit(AST::UnitDecl* unit) {
+    if (!unit) throw vm::semantic_error("ast unit is nullptr");
 
-        for (int i = cur->kids.size() - 1; i >= 0; i--) {
-            stack.push(cur->kids[i].get());
+    remb_funcs(unit);  // remembering function names for
+                       // future possible calling, etc
+
+    for (const auto& kid : unit->kids) {
+        if (!kid) throw vm::semantic_error("processing unit: kid is nullptr");
+
+        if (kid->type == AST::NodeType::FUNC_DECL) {
+            process_func(static_cast<AST::FunctionDecl*>(kid.get()));
+            continue;
         }
 
-        if (is_func) {
-            process_func(cur);
-        } else {
-            if (cur->type == AST::NodeType::FUNC_DECL) {
-                is_func = true;
+        if (kid->type == AST::NodeType::VARIABLE_DECL) {
+            process_var_decl(static_cast<AST::VariableDecl*>(kid.get()),
+                             global_st);
+            continue;
+        }
 
-                AST::FunctionDecl* func = static_cast<AST::FunctionDecl*>(cur);
-
-                const auto& name = source_manager.get(func->ref_idx);
-                const auto& type = source_manager.get(func->ref_type);
-
-                auto meta =
-                    symstable.make_meta(type, SymbolTable::Group::FUNCTION);
-                if (symstable.contains(name.get_lexeme(), meta))
-                    throw vm::semantic_error(
-                        "already contains identical func name");
-                symstable.push(name.get_lexeme(), std::move(meta));
-                continue;
-            }
+        if (kid->type == AST::NodeType::ASSIGN_STMT) {
+            process_assign_decl(static_cast<AST::AssignStmt*>(kid.get()),
+                                global_st);
+            continue;
         }
     }
 }
 
-void Analyzer::process_func(AST::Node* cur) {
-    switch (cur->type) {
-        case AST::NodeType::PARAM_DECL:
-            process_param(cur);
+void Analyzer::process_func(AST::FunctionDecl* func) {
+    SymbolTable local(false);  // local symbol table for only that func
+
+    for (const auto& kid : func->kids) {
+        if (!kid)
+            throw vm::semantic_error("failed to process func: kid is nullptr");
+        if (kid->type == AST::NodeType::PARAM_DECL) {
+            process_param(static_cast<AST::ParamDecl*>(kid.get()), local);
+            continue;
+        }
+
+        if (kid->type == AST::NodeType::COMPOUND_STMT) {
+            process_body(static_cast<AST::CompoundStmt*>(kid.get()), local);
             break;
-        case AST::NodeType::COMPOUND_STMT:
-            break;
-        case AST::NodeType::ASSIGN_STMT:
-            break;
-        default:
-            throw vm::semantic_error("failed to define node type");
+        }
+
+        throw vm::semantic_error("failed to process func: unknown kid");
     }
 }
 
-void Analyzer::process_param(AST::Node* cur) {
-    AST::ParamDecl* param = static_cast<AST::ParamDecl*>(cur);
-
+void Analyzer::process_param(AST::ParamDecl* param, SymbolTable& table) {
     const auto& name = source_manager.get(param->ref_idx);
     const auto& type = source_manager.get(param->ref_type);
 
-    auto meta =
-        SymbolTable::make_meta(type, SymbolTable::Group::FUNCTION_PARAM);
+    auto meta = SymbolTable::make_meta(type, SymbolTable::Group::VARIABLE);
 
-    if (symstable.contains(name.get_lexeme(), meta))
-        throw vm::semantic_error("already contains identical param");
+    if (table.contains(name.get_lexeme()))
+        throw vm::semantic_error("local table already contains that name");
 
-    symstable.push(name.get_lexeme(), std::move(meta));
+    table.push(name.get_lexeme(), meta);
 }
 
-void Analyzer::process_assign(AST::Node* cur) {
-    AST::AssignStmt* agn = static_cast<AST::AssignStmt*>(cur);
+void Analyzer::process_body(AST::CompoundStmt* stmt, SymbolTable& table) {
+    for (const auto& kid : stmt->kids) {
+        switch (kid->type) {
+            case AST::VARIABLE_DECL:
+                process_var_decl(static_cast<AST::VariableDecl*>(kid.get()),
+                                 table);
+                break;
+            case AST::ASSIGN_STMT:
+                process_assign_decl(static_cast<AST::AssignStmt*>(kid.get()),
+                                    table);
+                break;
+            default:
+                throw vm::semantic_error(
+                    "failed to process body: unknown type");
+        }
+    }
+}
+
+void Analyzer::process_var_decl(AST::VariableDecl* decl, SymbolTable& table) {
+    const auto& name = source_manager.get(decl->ref_idx);
+    const auto& type = source_manager.get(decl->ref_type);
+
+    if (table.contains(name.get_lexeme()))
+        throw vm::semantic_error(
+            "failed to process var decl: name already exists");
+
+    if (!table.is_global()) {
+        if (global_st.contains(name.get_lexeme(), SymbolTable::Group::VARIABLE))
+            throw vm::semantic_error(
+                "failed to process var decl: global var with that name already "
+                "exists");
+    }
+
+    auto meta = SymbolTable::make_meta(type, SymbolTable::Group::VARIABLE);
+
+    table.push(name.get_lexeme(), meta);
+}
+
+void Analyzer::process_ref_var_decl(AST::RefVarDecl* decl, SymbolTable& table) {
+    const auto& name = source_manager.get(decl->ref_idx);
+
+    if (table.contains(name.get_lexeme(), SymbolTable::Group::VARIABLE)) return;
+
+    if (!table.is_global()) {
+        if (global_st.contains(name.get_lexeme(), SymbolTable::Group::VARIABLE))
+            return;
+    }
+
+    throw vm::semantic_error(
+        "failed to process ref var decl: unknown reference");
+}
+
+void Analyzer::process_assign_decl(AST::AssignStmt* stmt, SymbolTable& table) {
+    if (stmt->kids.size() != 2)
+        throw vm::semantic_error(
+            "failed to process assign: invalid size of kids");
+
+    const auto& lhs = stmt->kids[0];
+    if (lhs->type == AST::VARIABLE_DECL) {
+        process_var_decl(static_cast<AST::VariableDecl*>(lhs.get()), table);
+    } else if (lhs->type == AST::REF_VAR_DECL) {
+        process_ref_var_decl(static_cast<AST::RefVarDecl*>(lhs.get()), table);
+    } else
+        throw vm::semantic_error("failed to process assign: invalid lhs");
+
+    const auto& rhs = stmt->kids[1];
+    // TODO analyze expresison
+}
+
+void Analyzer::remb_funcs(AST::UnitDecl* unit) {
+    for (const auto& kid : unit->kids) {
+        if (!kid) throw vm::semantic_error("register funcs: kid is nullptr");
+        if (kid->type != AST::NodeType::FUNC_DECL) continue;
+
+        AST::FunctionDecl* func = static_cast<AST::FunctionDecl*>(kid.get());
+
+        const auto& name = source_manager.get(func->ref_idx);
+        const auto& type = source_manager.get(func->ref_type);
+
+        auto meta = SymbolTable::make_meta(type, SymbolTable::Group::FUNCTION);
+
+        if (global_st.contains(name.get_lexeme()))
+            throw vm::semantic_error("register funcs: name already exists");
+
+        global_st.push(name.get_lexeme(), meta);
+    }
 }
