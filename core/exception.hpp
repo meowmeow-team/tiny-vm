@@ -29,4 +29,14 @@ class syntax_error : public vm_error {
     syntax_error(const char* message, uint32_t row, uint32_t col);
 };
 
+class symbol_table_error : public vm_error {
+   public:
+    symbol_table_error(const char* message);
+};
+
+class semantic_error : public vm_error {
+   public:
+    semantic_error(const char* message);
+};
+
 }  // namespace vm
