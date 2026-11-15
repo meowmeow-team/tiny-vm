@@ -1,8 +1,7 @@
 
-int $a = 19;
-
 void main(){
     int a = 10;
-    return a + $a;
+    int b = 10 + a;
 }
+
 

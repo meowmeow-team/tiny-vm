@@ -1,5 +1,6 @@
 add_library(semantic_analysis STATIC
     src/analyzer.cpp
+    src/symbol_table.cpp
 )
 
 target_include_directories(semantic_analysis PUBLIC
