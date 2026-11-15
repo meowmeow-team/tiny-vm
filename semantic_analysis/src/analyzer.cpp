@@ -134,16 +134,63 @@ void Analyzer::process_assign_decl(AST::AssignStmt* stmt, SymbolTable& table) {
         throw vm::semantic_error(
             "failed to process assign: invalid size of kids");
 
-    const auto& lhs = stmt->kids[0];
+    const auto&       lhs = stmt->kids[0];
+    SymbolTable::Type lhs_type{};
+
     if (lhs->type == AST::VARIABLE_DECL) {
-        process_var_decl(static_cast<AST::VariableDecl*>(lhs.get()), table);
+        AST::VariableDecl* decl = static_cast<AST::VariableDecl*>(lhs.get());
+        process_var_decl(decl, table);
+
+        const auto& type = source_manager.get(decl->ref_type);
+        lhs_type = SymbolTable::make_type(type);
     } else if (lhs->type == AST::REF_VAR_DECL) {
-        process_ref_var_decl(static_cast<AST::RefVarDecl*>(lhs.get()), table);
+        AST::RefVarDecl* decl = static_cast<AST::RefVarDecl*>(lhs.get());
+        process_ref_var_decl(decl, table);
+
+        const auto& name = source_manager.get(decl->ref_idx);
+
+        auto meta = find_ref_meta(name, table);
+        lhs_type = meta.type;
+
     } else
         throw vm::semantic_error("failed to process assign: invalid lhs");
 
     const auto& rhs = stmt->kids[1];
-    // TODO analyze expresison
+    process_expression(rhs.get(), table, lhs_type);
+}
+
+void Analyzer::process_expression(AST::Node* node, SymbolTable& table,
+                                  SymbolTable::Type type) {
+    switch (node->type) {
+        case AST::INT_LITERAL_DECL:
+            if (type != SymbolTable::Type::INT)
+                throw vm::semantic_error(
+                    "failed to process expression: wrong type of expression");
+            break;
+        case AST::REF_VAR_DECL: {
+            AST::RefVarDecl* ref = static_cast<AST::RefVarDecl*>(node);
+
+            const auto& name = source_manager.get(ref->ref_idx);
+
+            SymbolTable::Meta meta = find_ref_meta(name, table);
+            if (meta.type == type && meta.group == SymbolTable::Group::VARIABLE)
+                break;
+
+            throw vm::semantic_error("failed to process expression: wrong ref");
+            break;
+        }
+        case AST::BINARY_OPERATION:
+            if (node->kids.size() != 2)
+                throw vm::semantic_error(
+                    "failed to process expression: invalid binary op");
+
+            process_expression(node->kids[0].get(), table, type);  // lhs
+            process_expression(node->kids[1].get(), table, type);  // rhs
+            break;
+        default:
+            throw vm::semantic_error(
+                "failed to process expression: unknown node type");
+    }
 }
 
 void Analyzer::remb_funcs(AST::UnitDecl* unit) {
@@ -163,4 +210,18 @@ void Analyzer::remb_funcs(AST::UnitDecl* unit) {
 
         global_st.push(name.get_lexeme(), meta);
     }
+}
+
+const SymbolTable::Meta& Analyzer::find_ref_meta(const Token& name,
+                                                 SymbolTable& table) const {
+    if (!table.contains(name.get_lexeme(), SymbolTable::Group::VARIABLE)) {
+        if (!global_st.contains(name.get_lexeme(),
+                                SymbolTable::Group::VARIABLE))
+            throw vm::semantic_error(
+                "failed to find ref var meta: there is no such var");
+
+        return global_st.get(name.get_lexeme());
+    }
+
+    return table.get(name.get_lexeme());
 }

@@ -24,6 +24,10 @@ class Analyzer {
     void process_var_decl(AST::VariableDecl* decl, SymbolTable& table);
     void process_ref_var_decl(AST::RefVarDecl* decl, SymbolTable& table);
     void process_assign_decl(AST::AssignStmt* stmt, SymbolTable& table);
+    void process_expression(AST::Node* node, SymbolTable& table,
+                            SymbolTable::Type type);
 
-    void remb_funcs(AST::UnitDecl* unit);
+    void                     remb_funcs(AST::UnitDecl* unit);
+    const SymbolTable::Meta& find_ref_meta(const Token& name,
+                                           SymbolTable& table) const;
 };

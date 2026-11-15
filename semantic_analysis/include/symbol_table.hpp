@@ -29,8 +29,11 @@ class SymbolTable {
     bool contains(const std::string& name, Type type) const noexcept;
     bool contains(const std::string& name, Group group) const noexcept;
 
+    const Meta& get(const std::string& name) const;
+
     bool is_global() const noexcept;
 
+    static Type make_type(const Token& type);
     static Meta make_meta(const Token& type, Group group);
 
    private:

@@ -46,19 +46,30 @@ bool SymbolTable::contains(const std::string& name,
     return it->second.group == group;
 }
 
+const SymbolTable::Meta& SymbolTable::get(const std::string& name) const {
+    auto it = src.find(name);
+    if (it == src.end()) throw vm::symbol_table_error("failed to get meta");
+
+    return it->second;
+}
+
 bool SymbolTable::is_global() const noexcept { return global_desu; }
+
+SymbolTable::Type SymbolTable::make_type(const Token& type) {
+    static const std::unordered_map<std::string_view, Type> map = {
+        {"void", VOID}, {"int", INT}, {"char", CHAR}};
+
+    auto it = map.find(type.get_lexeme());
+    if (it == map.end())
+        throw vm::symbol_table_error("failed to make type: unknown lexeme");
+
+    return it->second;
+}
 
 SymbolTable::Meta SymbolTable::make_meta(const Token& type, Group group) {
     if (type.get_type() != TokenType::KEYWORD &&
         type.get_type() != TokenType::KEYWORD_TYPE)
         throw vm::symbol_table_error("failed to make meta: wrong type");
 
-    static const std::unordered_map<std::string_view, Type> map = {
-        {"void", VOID}, {"int", INT}, {"char", CHAR}};
-
-    auto it = map.find(type.get_lexeme());
-    if (it == map.end())
-        throw vm::symbol_table_error("failed to make meta: unknown lexeme");
-
-    return {it->second, group};
+    return {make_type(type), group};
 }
