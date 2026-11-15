@@ -3,6 +3,8 @@ add_executable(unit_tests
     test_core.cpp
     test_lexer.cpp
     test_parser.cpp
+    test_parser_randomized_incremental.cpp
+    test_parser_control_flow.cpp
     ../core/logger.cpp
     ../core/exception.cpp
     ../core/source_manager.cpp
