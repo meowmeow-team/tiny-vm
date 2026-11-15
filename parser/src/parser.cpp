@@ -288,7 +288,7 @@ std::unique_ptr<AST::Node> Parser::pratt_parse(uint32_t& idx,
 
         uint32_t op_idx = idx++;
 
-        auto rhs = pratt_parse(idx, it->second - 1);
+        auto rhs = pratt_parse(idx, it->second);
 
         std::unique_ptr<AST::BinaryOperation> op =
             std::make_unique<AST::BinaryOperation>();
