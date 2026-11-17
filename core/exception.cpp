@@ -21,4 +21,6 @@ symbol_table_error::symbol_table_error(const char* message)
 
 semantic_error::semantic_error(const char* message) : vm_error(message) {}
 
+codegen_error::codegen_error(const char* message) : vm_error(message) {}
+
 }  // namespace vm

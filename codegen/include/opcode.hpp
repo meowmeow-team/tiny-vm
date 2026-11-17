@@ -12,6 +12,7 @@ enum class Opcode : uint8_t {
     MOV,
     LOAD,
     STORE,
+    STORE_GLOBAL,
     LOAD_CONST,
     // transitions
     JMP,
