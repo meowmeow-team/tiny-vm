@@ -13,6 +13,8 @@ Chunk CodeGen::gen(AST::Node* node) {
     Chunk chunk{};
     gen_generic(node, chunk);
 
+    chunk.byte_code.push_ins(Opcode::HALT);
+
     return chunk;
 }
 

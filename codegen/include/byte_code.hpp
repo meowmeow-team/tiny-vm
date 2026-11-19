@@ -12,7 +12,7 @@ class ByteCode {
 
     void push_func(const std::string& name);
     void push_ins(Opcode opcode, uint8_t rd = 0, uint8_t rs1 = 0,
-                  uint8_t rs2 = 0, uint8_t immediate = 0);
+                  uint8_t rs2 = 0);
 
    private:
     std::vector<Instruction> src;  // all program instructions
