@@ -3,6 +3,7 @@ add_executable(unit_tests
     test_core.cpp
     test_lexer.cpp
     test_parser.cpp
+    test_optimizer_randomized.cpp
     ../core/logger.cpp
     ../core/exception.cpp
     ../core/source_manager.cpp
@@ -18,6 +19,7 @@ target_link_libraries(unit_tests PRIVATE
     Catch2::Catch2WithMain
     lexer
     parser
+    optimizer
 )
 
 include(Catch)
