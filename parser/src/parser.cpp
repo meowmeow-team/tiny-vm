@@ -182,8 +182,9 @@ void Parser::parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt) {
             parse_for(idx, cstmt);
             return;
         }
-        
-        throw vm::syntax_error("unknown keyword in block", token.get_pos().row, token.get_pos().column);
+
+        throw vm::syntax_error("unknown keyword in block", token.get_pos().row,
+                               token.get_pos().column);
     }
 
     if (token.get_type() == TokenType::KEYWORD_TYPE ||
@@ -191,7 +192,8 @@ void Parser::parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt) {
         parse_func_assign(idx, cstmt);
         return;
     }
-    throw vm::syntax_error("unexpected token in block", token.get_pos().row, token.get_pos().column);
+    throw vm::syntax_error("unexpected token in block", token.get_pos().row,
+                           token.get_pos().column);
 }
 
 // example: int a = 10;
@@ -303,18 +305,22 @@ std::unique_ptr<AST::Node> Parser::pratt_parse(uint32_t& idx,
 }
 
 void Parser::parse_if(uint32_t& idx, AST::CompoundStmt& cstmt) {
-    idx++; 
+    idx++;
 
-    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != "(") {
+    check_eof(idx);
+
+    if (source_manager.get(idx).get_lexeme() != "(")
         throw vm::syntax_error("expected '(' after if", 0, 0);
-    }
+
     idx++;
 
     auto condition = pratt_parse(idx, 0);
 
-    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != ")") {
+    check_eof(idx);
+
+    if (source_manager.get(idx).get_lexeme() != ")")
         throw vm::syntax_error("expected ')' after if condition", 0, 0);
-    }
+
     idx++;
 
     auto body = parse_block(idx);
@@ -329,10 +335,14 @@ void Parser::parse_if(uint32_t& idx, AST::CompoundStmt& cstmt) {
 std::unique_ptr<AST::CompoundStmt> Parser::parse_block(uint32_t& idx) {
     auto block = std::make_unique<AST::CompoundStmt>();
 
-    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != "{") {
-        throw vm::syntax_error("expected '{' to start block", source_manager.get(idx).get_pos().row, 
-        source_manager.get(idx).get_pos().column);
+    check_eof(idx);
+
+    if (source_manager.get(idx).get_lexeme() != "{") {
+        throw vm::syntax_error("expected '{' to start block",
+                               source_manager.get(idx).get_pos().row,
+                               source_manager.get(idx).get_pos().column);
     }
+
     idx++;
 
     while (idx < source_manager.size()) {
@@ -340,7 +350,7 @@ std::unique_ptr<AST::CompoundStmt> Parser::parse_block(uint32_t& idx) {
             idx++;
             return block;
         }
-        parse_func_decl(idx, *block); 
+        parse_func_decl(idx, *block);
     }
 
     throw vm::syntax_error("expected '}' to close block", 0, 0);
@@ -349,28 +359,41 @@ std::unique_ptr<AST::CompoundStmt> Parser::parse_block(uint32_t& idx) {
 void Parser::parse_while(uint32_t& idx, AST::CompoundStmt& cstmt) {
     idx++;
 
-    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != "(") {
-        throw vm::syntax_error("expected '(' after while", 
-            source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
+    check_eof(idx);
+
+    if (source_manager.get(idx).get_lexeme() != "(") {
+        throw vm::syntax_error("expected '(' after while",
+                               source_manager.get(idx).get_pos().row,
+                               source_manager.get(idx).get_pos().column);
     }
-    idx++; 
+    idx++;
     auto condition = pratt_parse(idx, 0);
 
-    if (idx >= source_manager.size() || source_manager.get(idx).get_lexeme() != ")") {
-        throw vm::syntax_error("expected ')' after while condition", 
-            source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
+    check_eof(idx);
+
+    if (source_manager.get(idx).get_lexeme() != ")") {
+        throw vm::syntax_error("expected ')' after while condition",
+                               source_manager.get(idx).get_pos().row,
+                               source_manager.get(idx).get_pos().column);
     }
-    idx++; 
+    idx++;
 
     auto body = parse_block(idx);
 
     auto while_node = std::make_unique<AST::WhileStmt>();
-    while_node->kids.push_back(std::move(condition)); 
-    while_node->kids.push_back(std::move(body));     
+    while_node->kids.push_back(std::move(condition));
+    while_node->kids.push_back(std::move(body));
 
     cstmt.kids.push_back(std::move(while_node));
 }
 
 void Parser::parse_for(uint32_t& idx, AST::CompoundStmt& cstmt) {
-    throw vm::syntax_error("for is not implemented yet", source_manager.get(idx).get_pos().row, source_manager.get(idx).get_pos().column);
+    throw vm::syntax_error("for is not implemented yet",
+                           source_manager.get(idx).get_pos().row,
+                           source_manager.get(idx).get_pos().column);
+}
+
+void Parser::check_eof(uint32_t idx) {
+    if (idx >= source_manager.size())
+        throw vm::syntax_error("unexpected end of file", 0, 0);
 }
