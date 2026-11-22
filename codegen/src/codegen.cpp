@@ -67,7 +67,9 @@ void CodeGen::gen_param(AST::ParamDecl* param) {
     if (!cur_is_func) throw vm::codegen_error("how is it even possible");
 
     const auto& name = source_manager.get(param->ref_idx);
-    cur_meta.src.emplace(name.get_lexeme(), cur_meta.next_reg++);
+    const auto& type = source_manager.get(param->ref_type);
+
+    push_scope_meta(name.get_lexeme(), type.get_lexeme());
 }
 
 void CodeGen::gen_var_decl(AST::VariableDecl* decl) {
@@ -77,7 +79,7 @@ void CodeGen::gen_var_decl(AST::VariableDecl* decl) {
     if (!cur_is_func) {
         chunk.push_gl_var(name.get_lexeme(), convert_lexeme(type, nullptr));
     } else {
-        cur_meta.src.emplace(name.get_lexeme(), cur_meta.next_reg++);
+        push_scope_meta(name.get_lexeme(), type.get_lexeme());
     }
 }
 
@@ -88,20 +90,29 @@ void CodeGen::gen_assign_decl(AST::AssignStmt* stmt) {
     VarMeta var_meta{};
     if (lhs->type == AST::VARIABLE_DECL) {
         gen_var_decl(static_cast<AST::VariableDecl*>(lhs.get()));
-        var_meta = {VarMeta::LOCAL,
+        var_meta = {VarMeta::LOCAL, VarMeta::INT,
                     static_cast<uint8_t>(cur_meta.next_reg - 1)};
     } else {
         auto        ref = static_cast<AST::RefVarDecl*>(lhs.get());
         const auto& name = source_manager.get(ref->ref_idx);
-        var_meta = find_var(name.get_lexeme());
+    }
+
+    if (cur_is_func) {
+    } else {
     }
 }
 
-CodeGen::VarMeta CodeGen::find_var(const std::string& name) const {
-    auto it = cur_meta.src.find(name);
-    if (it != cur_meta.src.end()) return {VarMeta::LOCAL, it->second};
+uint8_t CodeGen::claim_reg() {
+    if (cur_meta.next_reg >= 32) throw vm::codegen_error("too much registers");
+    return cur_meta.next_reg++;
+}
 
-    return {VarMeta::GLOBAL, static_cast<uint8_t>(chunk.find_gl_idx(name))};
+void CodeGen::push_scope_meta(const std::string& name,
+                              const std::string& type) {
+    uint8_t reg = claim_reg();
+
+    cur_meta.src.emplace(name, reg);
+    cur_meta.types.emplace(reg, VarMeta::what_type(type));
 }
 
 std::any CodeGen::convert_lexeme(const Token& type, Token* value) {

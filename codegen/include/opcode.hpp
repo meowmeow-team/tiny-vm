@@ -10,10 +10,8 @@ enum class Opcode : uint8_t {
     DIV,
     // memory
     MOV,
-    LOAD,
-    STORE,
-    STORE_GLOBAL,
-    LOAD_CONST,
+    LOAD,        // hueta 1
+    LOAD_CONST,  // hueta 2
     // transitions
     JMP,
     // other

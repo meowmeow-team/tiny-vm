@@ -4,22 +4,14 @@
 #include "../../core/source_manager.hpp"
 #include "../../parser/include/ast.hpp"
 #include "chunk.hpp"
+#include "var_meta.hpp"
 
 class CodeGen {
    public:
     struct ScopeMeta {
-        std::unordered_map<std::string, uint8_t> src;
-        uint8_t                                  next_reg = 0;
-    };
-
-    struct VarMeta {
-        enum Loc {
-            GLOBAL,
-            LOCAL,
-        };
-
-        Loc     loc;
-        uint8_t idx;
+        std::unordered_map<std::string, uint8_t>   src;
+        std::unordered_map<uint8_t, VarMeta::Type> types;
+        uint8_t                                    next_reg = 0;
     };
 
    public:
@@ -43,7 +35,8 @@ class CodeGen {
     void gen_var_decl(AST::VariableDecl* decl);
     void gen_assign_decl(AST::AssignStmt* stmt);
 
-    VarMeta find_var(const std::string& name) const;
+    uint8_t claim_reg();
+    void    push_scope_meta(const std::string& name, const std::string& type);
 
    private:
     static std::any convert_lexeme(const Token& type, Token* value);
