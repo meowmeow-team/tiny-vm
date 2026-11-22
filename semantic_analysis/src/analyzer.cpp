@@ -5,7 +5,10 @@
 #include "../../core/exception.hpp"
 
 Analyzer::Analyzer(SourceManager& source_manager)
-    : source_manager(source_manager), global_st(true) {}
+    : source_manager(source_manager),
+      global_st(true),
+      cur_var_name(),
+      is_var_decl(false) {}
 
 /*
  * example:
@@ -113,16 +116,24 @@ void Analyzer::process_var_decl(AST::VariableDecl* decl, SymbolTable& table) {
     auto meta = SymbolTable::make_meta(type, SymbolTable::Group::VARIABLE);
 
     table.push(name.get_lexeme(), meta);
+    cur_var_name = name.get_lexeme();
+    is_var_decl = true;
 }
 
 void Analyzer::process_ref_var_decl(AST::RefVarDecl* decl, SymbolTable& table) {
     const auto& name = source_manager.get(decl->ref_idx);
 
-    if (table.contains(name.get_lexeme(), SymbolTable::Group::VARIABLE)) return;
+    if (table.contains(name.get_lexeme(), SymbolTable::Group::VARIABLE)) {
+        cur_var_name = name.get_lexeme();
+        return;
+    }
 
     if (!table.is_global()) {
-        if (global_st.contains(name.get_lexeme(), SymbolTable::Group::VARIABLE))
+        if (global_st.contains(name.get_lexeme(),
+                               SymbolTable::Group::VARIABLE)) {
+            cur_var_name = name.get_lexeme();
             return;
+        }
     }
 
     throw vm::semantic_error(
@@ -157,6 +168,8 @@ void Analyzer::process_assign_decl(AST::AssignStmt* stmt, SymbolTable& table) {
 
     const auto& rhs = stmt->kids[1];
     process_expression(rhs.get(), table, lhs_type);
+
+    is_var_decl = false;
 }
 
 void Analyzer::process_expression(AST::Node* node, SymbolTable& table,
@@ -171,6 +184,10 @@ void Analyzer::process_expression(AST::Node* node, SymbolTable& table,
             AST::RefVarDecl* ref = static_cast<AST::RefVarDecl*>(node);
 
             const auto& name = source_manager.get(ref->ref_idx);
+
+            if (is_var_decl && name.get_lexeme() == cur_var_name)
+                throw vm::semantic_error(
+                    "failed to process expression: wrong type of expression");
 
             SymbolTable::Meta meta = find_ref_meta(name, table);
             if (meta.type == type && meta.group == SymbolTable::Group::VARIABLE)
