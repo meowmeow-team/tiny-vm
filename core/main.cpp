@@ -2,13 +2,14 @@
 
 #include "../lexer/include/lexer.hpp"
 #include "../parser/include/parser.hpp"
+#include "../semantic_analysis/include/analyzer.hpp"
 #include "logger.hpp"
 #include "source_manager.hpp"
 
 int main(void) {
-    // const char* path = getenv("HOME");
-    // std::string fr = std::string(path) + "/tiny-vm/code_example";
-    std::string fr = "code_example";
+    const char* path = getenv("HOME");
+    std::string fr =
+        std::string(path) + "/Documents/projects/tiny-vm/code_example";
 
     Logger log;
     log.enable_log_shell();
@@ -26,6 +27,9 @@ int main(void) {
     Parser parser(src, log);
     auto   ast = parser.parse_unit("code_example");
     ast.print(&ast);
+
+    Analyzer analyzer(src);
+    analyzer.process_unit(&ast);
 
     return 0;
 }

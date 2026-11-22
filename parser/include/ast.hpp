@@ -59,7 +59,6 @@ struct UnitDecl : public Node {
 // ref_type - to the type, param structs in the kids
 struct FunctionDecl : public Node {
     FunctionDecl();
-
     uint32_t ref_type;
 };
 
