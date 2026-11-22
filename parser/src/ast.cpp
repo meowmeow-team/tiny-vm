@@ -19,7 +19,7 @@ void UnitDecl::print(UnitDecl* unit) const noexcept {
     std::queue<AST::Node*>  qe;
     qe.push(unit);
     while (!qe.empty()) {
-        AST::Node* n = qe.back();
+        AST::Node* n = qe.front();
         qe.pop();
         for (size_t i = 0; i < n->kids.size(); i++) {
             res.push_back(n->kids[i].get());
@@ -52,3 +52,9 @@ RefVarDecl::RefVarDecl() : Node(REF_VAR_DECL) {}
 IntLiteralDecl::IntLiteralDecl() : Node(INT_LITERAL_DECL) {}
 
 BinaryOperation::BinaryOperation() : Node(BINARY_OPERATION) {}
+
+IfStmt::IfStmt() : Node(IF_STMT) {}
+
+WhileStmt::WhileStmt() : Node(WHILE_STMT) {}
+
+ForStmt::ForStmt() : Node(FOR_STMT) {}

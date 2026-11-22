@@ -18,6 +18,9 @@ enum NodeType {
     REF_VAR_DECL,
     INT_LITERAL_DECL,
     BINARY_OPERATION,  // 9
+    IF_STMT,
+    WHILE_STMT,
+    FOR_STMT, //12
 };
 
 struct Node {
@@ -56,7 +59,6 @@ struct UnitDecl : public Node {
 // ref_type - to the type, param structs in the kids
 struct FunctionDecl : public Node {
     FunctionDecl();
-
     uint32_t ref_type;
 };
 
@@ -100,4 +102,29 @@ struct BinaryOperation : public Node {
     BinaryOperation();
 };
 
+// for if-statements if (cond) {...} else {...}
+// kids[0] - BinaryOperation
+//kids[1] - CompoundStmt
+//kids[2] - CompoundStmt
+struct IfStmt : public Node {
+    IfStmt();
+};
+
+// for while-statements while (cond) {...}
+// kids[0] - BinaryOperation
+// kids[1] - CompoundStmt
+struct WhileStmt : public Node {
+    WhileStmt();
+};
+
+// for for (init; condition; step) { ... }
+// kids[0] - assignStmt (?)
+// kids[1] - BinaryOperation
+// kids[2] - assignStmt (?)
+// kids[3] - CompoundStmt
+struct ForStmt : public Node {
+    ForStmt();
+};
+
 };  // namespace AST
+
