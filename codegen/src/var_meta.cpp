@@ -9,6 +9,9 @@ VarMeta::VarMeta() : loc(), type(), idx() {}
 VarMeta::VarMeta(VarMeta::Loc loc, VarMeta::Type type, uint8_t idx)
     : loc(loc), type(type), idx(idx) {}
 
+VarMeta::VarMeta(Loc loc, const std::string& type_lex, uint8_t idx)
+    : loc(loc), type(what_type(type_lex)), idx(idx) {}
+
 VarMeta::Loc VarMeta::get_loc() const noexcept { return loc; }
 
 VarMeta::Type VarMeta::get_type() const noexcept { return type; }
@@ -24,4 +27,14 @@ VarMeta::Type VarMeta::what_type(const std::string& lexeme) {
         throw vm::codegen_error("failed to find var meta type");
 
     return it->second;
+}
+
+VarMeta::Type VarMeta::what_type(const std::type_info& t) {
+    if (t == typeid(int)) {
+        return INT;
+    } else if (t == typeid(char)) {
+        return CHAR;
+    }
+
+    throw vm::codegen_error("failed to find var meta type by typeid");
 }

@@ -10,8 +10,8 @@ Chunk CodeGen::gen(AST::Node* node) {
 
     cur_is_func = false;
     cur_meta = {};
+    chunk = {};
 
-    Chunk chunk{};
     gen_generic(node);
 
     chunk.byte_code.push_ins(Opcode::HALT);
@@ -87,18 +87,41 @@ void CodeGen::gen_assign_decl(AST::AssignStmt* stmt) {
     const auto& lhs = stmt->kids[0];
     const auto& rhs = stmt->kids[1];
 
-    VarMeta var_meta{};
+    VarMeta meta;
     if (lhs->type == AST::VARIABLE_DECL) {
-        gen_var_decl(static_cast<AST::VariableDecl*>(lhs.get()));
-        var_meta = {VarMeta::LOCAL, VarMeta::INT,
-                    static_cast<uint8_t>(cur_meta.next_reg - 1)};
+        auto decl = static_cast<AST::VariableDecl*>(lhs.get());
+        gen_var_decl(decl);
+
+        const auto& name = source_manager.get(decl->ref_idx);
+        meta = find_var_meta(name.get_lexeme());
     } else {
-        auto        ref = static_cast<AST::RefVarDecl*>(lhs.get());
-        const auto& name = source_manager.get(ref->ref_idx);
+        auto decl = static_cast<AST::RefVarDecl*>(lhs.get());
+
+        const auto& name = source_manager.get(decl->ref_idx);
+        meta = find_var_meta(name.get_lexeme());
     }
 
-    if (cur_is_func) {
-    } else {
+    gen_expression(rhs.get(), meta);
+}
+
+void CodeGen::gen_expression(AST::Node* stmt, VarMeta& var_meta) {
+    if (stmt->type == AST::INT_LITERAL_DECL) {
+        auto lit = static_cast<AST::IntLiteralDecl*>(stmt);
+
+        const auto& val = source_manager.get(lit->ref_idx);
+        chunk.byte_code.push_ins(
+            Opcode::LOAD_CONST, var_meta.get_idx(),
+            static_cast<uint8_t>(std::stoi(val.get_lexeme())));
+    } else if (stmt->type == AST::REF_VAR_DECL) {
+        auto decl = static_cast<AST::RefVarDecl*>(stmt);
+
+        const auto& name = source_manager.get(decl->ref_idx);
+        if (var_meta.get_loc() == VarMeta::GLOBAL) {
+        } else {
+            // local
+        }
+    } else if (stmt->type == AST::BINARY_OPERATION) {
+        auto op = static_cast<AST::BinaryOperation*>(stmt);
     }
 }
 
@@ -113,6 +136,20 @@ void CodeGen::push_scope_meta(const std::string& name,
 
     cur_meta.src.emplace(name, reg);
     cur_meta.types.emplace(reg, VarMeta::what_type(type));
+}
+
+VarMeta CodeGen::find_var_meta(const std::string& name) {
+    auto it = cur_meta.src.find(name);
+    if (it == cur_meta.src.end()) {
+        auto gl = chunk.find_gl_idx(name);
+        auto any = chunk.get_gl(gl);
+        return {VarMeta::GLOBAL, VarMeta::what_type(any.type()),
+                static_cast<uint8_t>(gl)};
+    }
+
+    auto type = cur_meta.types.find(it->second);
+
+    return VarMeta(VarMeta::LOCAL, type->second, it->second);
 }
 
 std::any CodeGen::convert_lexeme(const Token& type, Token* value) {

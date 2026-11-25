@@ -1,7 +1,6 @@
 #pragma once
 
 #include <any>
-#include <utility>
 #include <vector>
 
 #include "byte_code.hpp"
@@ -16,6 +15,8 @@ class Chunk {
     size_t   find_gl_idx(const std::string& name) const;
 
     ByteCode byte_code;
+
+    friend std::ostream& operator<<(std::ostream& out, const Chunk& chunk);
 
    private:
     std::vector<std::any>                   gl_pool;

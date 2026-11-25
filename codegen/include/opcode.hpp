@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 enum class Opcode : uint8_t {
     // math
@@ -20,3 +21,5 @@ enum class Opcode : uint8_t {
     PRINT,
     HALT
 };
+
+static std::string opcode_to_str(Opcode opcode);

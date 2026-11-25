@@ -35,8 +35,13 @@ class CodeGen {
     void gen_var_decl(AST::VariableDecl* decl);
     void gen_assign_decl(AST::AssignStmt* stmt);
 
+    void gen_expression(AST::Node* stmt, VarMeta& var_meta);
+
     uint8_t claim_reg();
-    void    push_scope_meta(const std::string& name, const std::string& type);
+
+    void push_scope_meta(const std::string& name, const std::string& type);
+
+    VarMeta find_var_meta(const std::string& name);
 
    private:
     static std::any convert_lexeme(const Token& type, Token* value);
