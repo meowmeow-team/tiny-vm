@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(lexer)
 add_subdirectory(parser)
 add_subdirectory(semantic_analysis)
+add_subdirectory(codegen)
 add_subdirectory(optimizer)
 
 add_executable(tiny-vm
@@ -19,6 +20,7 @@ add_executable(tiny-vm
 target_link_libraries(tiny-vm PRIVATE lexer)
 target_link_libraries(tiny-vm PRIVATE parser)
 target_link_libraries(tiny-vm PRIVATE semantic_analysis)
+target_link_libraries(tiny-vm PRIVATE codegen-module)
 target_link_libraries(tiny-vm PRIVATE optimizer)
 
 if(BUILD_TESTING)

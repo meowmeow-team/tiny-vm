@@ -39,4 +39,9 @@ class semantic_error : public vm_error {
     semantic_error(const char* message);
 };
 
+class codegen_error : public vm_error {
+   public:
+    codegen_error(const char* message);
+};
+
 }  // namespace vm
