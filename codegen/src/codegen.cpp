@@ -52,17 +52,17 @@ void CodeGen::gen_unit(AST::UnitDecl* unit) {
         if (!kid) continue;
         gen_generic(kid.get());
     }
-
-    auto opt = chunk.byte_code.get_last_ins();
-    if (opt && opt->opcode != Opcode::RET) {
-        chunk.byte_code.push_ins(Opcode::RET);
-    }
 }
 
 void CodeGen::gen_compound(AST::CompoundStmt* stmt) {
     for (const auto& kid : stmt->kids) {
         if (!kid) continue;
         gen_generic(kid.get());
+    }
+
+    auto opt = chunk.byte_code.get_last_ins();
+    if (opt && opt->opcode != Opcode::RET) {
+        chunk.byte_code.push_ins(Opcode::RET);
     }
 }
 
