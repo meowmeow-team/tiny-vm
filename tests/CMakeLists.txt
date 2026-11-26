@@ -21,6 +21,7 @@ target_link_libraries(unit_tests PRIVATE
     Catch2::Catch2WithMain
     lexer
     parser
+    optimizer
     semantic_analysis
 )
 
