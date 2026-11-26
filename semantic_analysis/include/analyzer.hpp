@@ -16,6 +16,9 @@ class Analyzer {
     SourceManager& source_manager;
     SymbolTable    global_st;
 
+    std::string cur_var_name;
+    bool        is_var_decl;
+
    private:
     void process_func(AST::FunctionDecl* func);
     void process_param(AST::ParamDecl* param, SymbolTable& table);

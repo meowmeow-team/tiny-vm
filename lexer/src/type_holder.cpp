@@ -28,6 +28,10 @@ const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"private", TokenType::KEYWORD},
     {"protected", TokenType::KEYWORD},
     {"class", TokenType::KEYWORD},
+    {"if", TokenType::KEYWORD},
+    {"else", TokenType::KEYWORD},
+    {"while", TokenType::KEYWORD},
+    {"for", TokenType::KEYWORD},
     {"void", TokenType::KEYWORD_TYPE},
     {"bool", TokenType::KEYWORD_TYPE},
     {"byte", TokenType::KEYWORD_TYPE},
@@ -54,10 +58,11 @@ const std::unordered_map<std::string_view, TokenType> TypeHolder::src = {
     {"||", TokenType::OPERATOR},
     {"/", TokenType::OPERATOR},
     {"[", TokenType::SYMBOL},
-    {"]", TokenType::SYMBOL}};
+    {"]", TokenType::SYMBOL},
+    {",", TokenType::SYMBOL}};
 
 const std::unordered_set<char> TypeHolder::symbols = {'{', '}', '(', ')', '[',
-                                                      ']', '"', ';', '.'};
+                                                      ']', '"', ';', '.', ','};
 
 TokenType TypeHolder::find(std::string_view word) noexcept {
     if (word.empty()) return TokenType::UNKNOWN;
