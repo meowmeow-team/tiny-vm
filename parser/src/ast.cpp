@@ -52,3 +52,9 @@ RefVarDecl::RefVarDecl() : Node(REF_VAR_DECL) {}
 IntLiteralDecl::IntLiteralDecl() : Node(INT_LITERAL_DECL) {}
 
 BinaryOperation::BinaryOperation() : Node(BINARY_OPERATION) {}
+
+IfStmt::IfStmt() : Node(IF_STMT) {}
+
+WhileStmt::WhileStmt() : Node(WHILE_STMT) {}
+
+ForStmt::ForStmt() : Node(FOR_STMT) {}
