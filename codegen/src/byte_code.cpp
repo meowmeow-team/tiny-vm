@@ -7,13 +7,16 @@
 ByteCode::ByteCode() {}
 
 void ByteCode::push_func(const std::string& name) {
-    funcs_defs.emplace(name, src.size());
+    auto     opt = get_last_ins();
+    uint32_t idx = src.size();
+    if (opt) {
+        if (opt->opcode == Opcode::RET) idx++;
+    }
+    funcs_defs.emplace(name, idx);
+    funcs_idx.emplace(idx, name);
 }
 
 void ByteCode::push_ins(Opcode opcode, uint8_t rd, uint8_t rs1, uint8_t rs2) {
-    std::cout << "PUSH: " << opcode::opcode_to_str(opcode) << " "
-              << static_cast<int>(rd) << " " << static_cast<int>(rs1) << " "
-              << static_cast<int>(rs2) << '\n';
     src.push_back({opcode, rd, rs1, rs2});
 }
 
@@ -34,6 +37,11 @@ std::ostream& operator<<(std::ostream& out, const ByteCode& bc) {
 
     size_t line = 0;
     for (auto ins : bc.src) {
+        auto it = bc.funcs_idx.find(line);
+        if (it != bc.funcs_idx.end()) {
+            out << line++ << " * " << " func: " << it->second << next;
+        }
+
         out << line++ << "    " << opcode::opcode_to_str(ins.opcode) << ", "
             << static_cast<int>(ins.rd) << ", " << static_cast<int>(ins.rs1)
             << ", " << static_cast<int>(ins.rs2) << next;

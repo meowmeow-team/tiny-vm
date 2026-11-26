@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -27,4 +28,7 @@ class ByteCode {
     std::unordered_map<std::string, uint32_t>
         funcs_defs;  // first arg - name of func
                      // second arg - index in src vector
+    std::map<uint32_t, std::string>
+        funcs_idx;  // first arg - index in src vector
+                    // second arg - name of func
 };
