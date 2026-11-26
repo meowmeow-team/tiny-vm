@@ -20,6 +20,9 @@ class ByteCode {
     Instruction                get_ins(size_t idx);
     size_t                     get_size() const noexcept;
 
+    std::optional<std::string> find_func(size_t idx) const noexcept;
+    std::optional<uint32_t> find_func(const std::string& name) const noexcept;
+
     friend std::ostream& operator<<(std::ostream& out, const ByteCode& bc);
 
    private:

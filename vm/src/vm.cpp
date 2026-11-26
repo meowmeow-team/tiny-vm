@@ -22,8 +22,18 @@ void VM::disable_logging() noexcept {
 
 void VM::run() {
     auto& bc = chunk.byte_code;
+    bool  has_func = false;
+
     while (cur_ins < bc.get_size()) {
         const auto ins = bc.get_ins(cur_ins);
+
+        if (!has_func) {
+            auto opt = bc.find_func(cur_ins);
+            if (opt) {
+                has_func = true;
+                log("executing func: ", *opt);
+            }
+        }
 
         switch (ins.opcode) {
             case Opcode::LOAD_CONST:
@@ -55,6 +65,9 @@ void VM::run() {
                 log("executing DIV: ", static_cast<int>(ins.rd), " <- ",
                     static_cast<int>(ins.rs1), " / ",
                     static_cast<int>(ins.rs2));
+                break;
+            case Opcode::RET:
+                has_func = false;
                 break;
             case Opcode::HALT:
                 return;

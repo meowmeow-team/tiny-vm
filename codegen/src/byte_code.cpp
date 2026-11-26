@@ -7,11 +7,7 @@
 ByteCode::ByteCode() {}
 
 void ByteCode::push_func(const std::string& name) {
-    auto     opt = get_last_ins();
     uint32_t idx = src.size();
-    if (opt) {
-        if (opt->opcode == Opcode::RET) idx++;
-    }
     funcs_defs.emplace(name, idx);
     funcs_idx.emplace(idx, name);
 }
@@ -32,6 +28,21 @@ Instruction ByteCode::get_ins(size_t idx) {
 
 size_t ByteCode::get_size() const noexcept { return src.size(); }
 
+std::optional<std::string> ByteCode::find_func(size_t idx) const noexcept {
+    auto it = funcs_idx.find(idx);
+    if (it == funcs_idx.end()) return std::nullopt;
+
+    return it->second;
+}
+
+std::optional<uint32_t> ByteCode::find_func(
+    const std::string& name) const noexcept {
+    auto it = funcs_defs.find(name);
+    if (it == funcs_defs.end()) return std::nullopt;
+
+    return it->second;
+}
+
 std::ostream& operator<<(std::ostream& out, const ByteCode& bc) {
     const char* next = "\n";
 
@@ -39,7 +50,7 @@ std::ostream& operator<<(std::ostream& out, const ByteCode& bc) {
     for (auto ins : bc.src) {
         auto it = bc.funcs_idx.find(line);
         if (it != bc.funcs_idx.end()) {
-            out << line++ << " * " << " func: " << it->second << next;
+            out << "(" << line << ")" << " func: " << it->second << next;
         }
 
         out << line++ << "    " << opcode::opcode_to_str(ins.opcode) << ", "
