@@ -4,10 +4,23 @@
 
 #include "../../core/exception.hpp"
 
-VM::VM() : regs(), cur_ins(0), out(nullptr), chunk() {}
+VM::VM()
+    : regs(),
+      cur_ins(0),
+      out(nullptr),
+      chunk(),
+      cur_func(Func::NONE),
+      func_nesting(0),
+      saved_ins{} {}
 
 VM::VM(Chunk chunk)
-    : regs(), cur_ins(0), out(nullptr), chunk(std::move(chunk)) {}
+    : regs(),
+      cur_ins(0),
+      out(nullptr),
+      chunk(std::move(chunk)),
+      cur_func(Func::NONE),
+      func_nesting(0),
+      saved_ins{} {}
 
 void VM::load(Chunk chunk) { this->chunk = std::move(chunk); }
 
@@ -24,17 +37,30 @@ void VM::run() {
     auto& bc = chunk.byte_code;
     bool  has_func = false;
 
-    while (cur_ins < bc.get_size()) {
-        const auto ins = bc.get_ins(cur_ins);
+    crawling();
+    execute();
+}
 
-        if (!has_func) {
-            auto opt = bc.find_func(cur_ins);
-            if (opt) {
-                has_func = true;
-                log("executing func: ", *opt);
+void VM::crawling() {
+    auto& bc = chunk.byte_code;
+    while (cur_ins < bc.get_size()) {
+        auto opt = bc.find_func(cur_ins);
+        if (opt) {
+            if (*opt == ENTRY_POINT) {
+                cur_func = Func::MAIN;
+                func_nesting = 1;
+                return;
             }
         }
 
+        cur_ins++;
+    }
+}
+
+void VM::execute() {
+    auto& bc = chunk.byte_code;
+    while (cur_ins < bc.get_size()) {
+        const auto ins = bc.get_ins(cur_ins);
         switch (ins.opcode) {
             case Opcode::LOAD_CONST:
                 regs[ins.rd] = ins.rs1;
@@ -67,7 +93,8 @@ void VM::run() {
                     static_cast<int>(ins.rs2));
                 break;
             case Opcode::RET:
-                has_func = false;
+                if (cur_func == Func::MAIN) return;
+                func_nesting--;
                 break;
             case Opcode::HALT:
                 return;
