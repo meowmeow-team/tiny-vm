@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "../codegen/include/codegen.hpp"
 #include "../lexer/include/lexer.hpp"
 #include "../parser/include/parser.hpp"
 #include "../semantic_analysis/include/analyzer.hpp"
@@ -8,8 +9,7 @@
 
 int main(void) {
     const char* path = getenv("HOME");
-    std::string fr =
-        std::string(path) + "/Documents/projects/tiny-vm/code_example";
+    std::string fr = std::string(path) + "/tiny-vm/code_example";
 
     Logger log;
     log.enable_log_shell();
@@ -30,6 +30,10 @@ int main(void) {
 
     Analyzer analyzer(src);
     analyzer.process_unit(&ast);
+
+    CodeGen codegen(src);
+    auto    chunk = codegen.gen(&ast);
+    std::cout << chunk << std::endl;
 
     return 0;
 }

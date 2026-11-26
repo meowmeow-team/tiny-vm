@@ -1,6 +1,16 @@
 int main() {
     int a = 10;
+<<<<<<< HEAD
     while (a > 5) {
         int b = 1;
     }
 }
+=======
+    int b = 20;
+}
+
+void lol(){
+    int c = 30;
+    int b = 40;
+}
+>>>>>>> dev/codegen
