@@ -11,47 +11,35 @@ ConstantEvaluator::ConstantEvaluator(const SourceManager& source)
     : source(source) {}
 
 std::optional<int64_t> ConstantEvaluator::evaluate(
-    const AST::Node* node
-) const {
+    const AST::Node* node) const {
     if (node == nullptr) {
         throw std::invalid_argument("AST node is null");
     }
 
     if (node->type == AST::INT_LITERAL_DECL) {
-        const std::string& text =
-            source.get(node->ref_idx).get_lexeme();
+        const std::string& text = source.get(node->ref_idx).get_lexeme();
 
         int64_t value = 0;
 
-        auto [ptr, ec] = std::from_chars(
-            text.data(),
-            text.data() + text.size(),
-            value
-        );
+        auto [ptr, ec] =
+            std::from_chars(text.data(), text.data() + text.size(), value);
 
         if (ec == std::errc::result_out_of_range) {
-            throw std::overflow_error(
-                "Integer literal is out of range: " + text
-            );
+            throw std::overflow_error("Integer literal is out of range: " +
+                                      text);
         }
 
-        if (ec != std::errc{} ||
-            ptr != text.data() + text.size()) {
-            throw std::invalid_argument(
-                "Invalid integer literal: " + text
-            );
+        if (ec != std::errc{} || ptr != text.data() + text.size()) {
+            throw std::invalid_argument("Invalid integer literal: " + text);
         }
 
         return value;
     }
 
     if (node->type == AST::BINARY_OPERATION) {
-        if (node->kids.size() != 2 ||
-            !node->kids[0] ||
-            !node->kids[1]) {
+        if (node->kids.size() != 2 || !node->kids[0] || !node->kids[1]) {
             throw std::invalid_argument(
-                "Binary operation must have two operands"
-            );
+                "Binary operation must have two operands");
         }
 
         auto left = evaluate(node->kids[0].get());
@@ -61,8 +49,7 @@ std::optional<int64_t> ConstantEvaluator::evaluate(
             return std::nullopt;
         }
 
-        const std::string& op =
-            source.get(node->ref_idx).get_lexeme();
+        const std::string& op = source.get(node->ref_idx).get_lexeme();
 
         return evaluate_operation(op, *left, *right);
     }
@@ -70,11 +57,9 @@ std::optional<int64_t> ConstantEvaluator::evaluate(
     return std::nullopt;
 }
 
-int64_t ConstantEvaluator::evaluate_operation(
-    const std::string& op,
-    int64_t left,
-    int64_t right
-) const {
+int64_t ConstantEvaluator::evaluate_operation(const std::string& op,
+                                              int64_t            left,
+                                              int64_t            right) const {
     constexpr int64_t MAX = std::numeric_limits<int64_t>::max();
     constexpr int64_t MIN = std::numeric_limits<int64_t>::min();
 
@@ -124,7 +109,5 @@ int64_t ConstantEvaluator::evaluate_operation(
         return left / right;
     }
 
-    throw std::invalid_argument(
-        "Unsupported binary operator: " + op
-    );
+    throw std::invalid_argument("Unsupported binary operator: " + op);
 }

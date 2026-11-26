@@ -20,7 +20,7 @@ enum NodeType {
     BINARY_OPERATION,  // 9
     IF_STMT,
     WHILE_STMT,
-    FOR_STMT, //12
+    FOR_STMT,  // 12
 };
 
 struct Node {
@@ -104,8 +104,8 @@ struct BinaryOperation : public Node {
 
 // for if-statements if (cond) {...} else {...}
 // kids[0] - BinaryOperation
-//kids[1] - CompoundStmt
-//kids[2] - CompoundStmt
+// kids[1] - CompoundStmt
+// kids[2] - CompoundStmt
 struct IfStmt : public Node {
     IfStmt();
 };
@@ -127,4 +127,3 @@ struct ForStmt : public Node {
 };
 
 };  // namespace AST
-
