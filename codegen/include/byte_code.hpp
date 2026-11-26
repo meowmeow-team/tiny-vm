@@ -16,6 +16,8 @@ class ByteCode {
                   uint8_t rs2 = 0);
 
     std::optional<Instruction> get_last_ins() const noexcept;
+    Instruction                get_ins(size_t idx);
+    size_t                     get_size() const noexcept;
 
     friend std::ostream& operator<<(std::ostream& out, const ByteCode& bc);
 

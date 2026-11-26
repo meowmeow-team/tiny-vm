@@ -44,4 +44,14 @@ class codegen_error : public vm_error {
     codegen_error(const char* message);
 };
 
+class byte_code_error : public vm_error {
+   public:
+    byte_code_error(const char* message);
+};
+
+class vms_error : public vm_error {
+   public:
+    vms_error(const char* message);
+};
+
 }  // namespace vm

@@ -23,4 +23,8 @@ semantic_error::semantic_error(const char* message) : vm_error(message) {}
 
 codegen_error::codegen_error(const char* message) : vm_error(message) {}
 
+byte_code_error::byte_code_error(const char* message) : vm_error(message) {}
+
+vms_error::vms_error(const char* message) : vm_error(message) {}
+
 }  // namespace vm

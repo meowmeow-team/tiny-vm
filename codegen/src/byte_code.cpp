@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "../../core/exception.hpp"
+
 ByteCode::ByteCode() {}
 
 void ByteCode::push_func(const std::string& name) {
@@ -19,6 +21,13 @@ std::optional<Instruction> ByteCode::get_last_ins() const noexcept {
     if (src.empty()) return std::nullopt;
     return src.back();
 }
+
+Instruction ByteCode::get_ins(size_t idx) {
+    if (idx >= src.size()) throw vm::byte_code_error("failed to get ins");
+    return src.at(idx);
+}
+
+size_t ByteCode::get_size() const noexcept { return src.size(); }
 
 std::ostream& operator<<(std::ostream& out, const ByteCode& bc) {
     const char* next = "\n";
