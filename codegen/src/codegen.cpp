@@ -26,6 +26,9 @@ void CodeGen::gen_generic(AST::Node* node) {
         case AST::UNIT_DECL:
             gen_unit(static_cast<AST::UnitDecl*>(node));
             break;
+        case AST::COMPOUND_STMT:
+            gen_compound(static_cast<AST::CompoundStmt*>(node));
+            break;
         case AST::FUNC_DECL:
             gen_func(static_cast<AST::FunctionDecl*>(node));
             break;
@@ -39,12 +42,25 @@ void CodeGen::gen_generic(AST::Node* node) {
             gen_assign_decl(static_cast<AST::AssignStmt*>(node));
             break;
         default:
+            std::cout << "LOOOL: " << node->type << std::endl;
             throw vm::codegen_error("failed to gen: unknown type of node");
     }
 }
 
 void CodeGen::gen_unit(AST::UnitDecl* unit) {
     for (const auto& kid : unit->kids) {
+        if (!kid) continue;
+        gen_generic(kid.get());
+    }
+
+    auto opt = chunk.byte_code.get_last_ins();
+    if (opt && opt->opcode != Opcode::RET) {
+        chunk.byte_code.push_ins(Opcode::RET);
+    }
+}
+
+void CodeGen::gen_compound(AST::CompoundStmt* stmt) {
+    for (const auto& kid : stmt->kids) {
         if (!kid) continue;
         gen_generic(kid.get());
     }

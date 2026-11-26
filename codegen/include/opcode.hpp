@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <istream>
 #include <string>
 
 enum class Opcode : uint8_t {
@@ -22,4 +23,8 @@ enum class Opcode : uint8_t {
     HALT
 };
 
-static std::string opcode_to_str(Opcode opcode);
+namespace opcode {
+
+std::string opcode_to_str(Opcode opcode);
+
+}

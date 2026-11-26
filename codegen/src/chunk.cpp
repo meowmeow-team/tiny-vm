@@ -34,4 +34,6 @@ std::ostream& operator<<(std::ostream& out, const Chunk& chunk) {
     }
 
     out << next << "chunk byte code: " << next;
+    out << chunk.byte_code << next;
+    return out;
 }

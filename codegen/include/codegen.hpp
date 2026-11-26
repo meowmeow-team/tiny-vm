@@ -30,6 +30,7 @@ class CodeGen {
     void gen_generic(AST::Node* node);
 
     void gen_unit(AST::UnitDecl* unit);
+    void gen_compound(AST::CompoundStmt* stmt);
     void gen_func(AST::FunctionDecl* func);
     void gen_param(AST::ParamDecl* param);
     void gen_var_decl(AST::VariableDecl* decl);

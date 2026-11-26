@@ -4,7 +4,7 @@
 
 #include "../../core/exception.hpp"
 
-static std::string opcode_to_str(Opcode opcode) {
+std::string opcode::opcode_to_str(Opcode opcode) {
     static std::unordered_map<Opcode, std::string> map = {
         {Opcode::ADD, "ADD"},
         {Opcode::SUB, "SUB"},
