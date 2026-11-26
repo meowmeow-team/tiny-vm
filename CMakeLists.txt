@@ -23,11 +23,8 @@ add_executable(tiny-vm
 target_link_libraries(tiny-vm PRIVATE lexer)
 target_link_libraries(tiny-vm PRIVATE parser)
 target_link_libraries(tiny-vm PRIVATE semantic_analysis)
-<<<<<<< HEAD
 target_link_libraries(tiny-vm PRIVATE optimizer)
-=======
 target_link_libraries(tiny-vm PRIVATE codegen-module)
->>>>>>> dev/codegen
 
 if(BUILD_TESTING)
     include(CTest)
