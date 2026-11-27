@@ -58,3 +58,5 @@ IfStmt::IfStmt() : Node(IF_STMT) {}
 WhileStmt::WhileStmt() : Node(WHILE_STMT) {}
 
 ForStmt::ForStmt() : Node(FOR_STMT) {}
+
+RetStmt::RetStmt() : Node(RET_STMT) {}

@@ -26,6 +26,7 @@ std::string Token::type_to_str(TokenType type) noexcept {
     static std::unordered_map<TokenType, const char*> map = {
         {TokenType::KEYWORD, "KEYWORD"},
         {TokenType::KEYWORD_TYPE, "KEYWORD_TYPE"},
+        {TokenType::KEYWORD_RET, "KEYWORD_RET"},
         {TokenType::IDENTIFIER, "IDENTIFIER"},
         {TokenType::OPERATOR, "OPERATOR"},
         {TokenType::NUMBER, "NUMBER"},
@@ -52,6 +53,7 @@ TokenType Token::str_to_type(const std::string& s) noexcept {
     static std::unordered_map<std::string_view, TokenType> map = {
         {"KEYWORD", TokenType::KEYWORD},
         {"KEYWORD_TYPE", TokenType::KEYWORD_TYPE},
+        {"KEYWORD_RET", TokenType::KEYWORD_RET},
         {"IDENTIFIER", TokenType::IDENTIFIER},
         {"OPERATOR", TokenType::OPERATOR},
         {"NUMBER", TokenType::NUMBER},

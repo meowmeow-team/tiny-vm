@@ -17,10 +17,11 @@ enum NodeType {
     VARIABLE_DECL,
     REF_VAR_DECL,
     INT_LITERAL_DECL,
-    BINARY_OPERATION,  // 9
-    IF_STMT,
+    BINARY_OPERATION,
+    IF_STMT,  // 10
     WHILE_STMT,
-    FOR_STMT,  // 12
+    FOR_STMT,
+    RET_STMT,  // 13
 };
 
 struct Node {
@@ -124,6 +125,12 @@ struct WhileStmt : public Node {
 // kids[3] - CompoundStmt
 struct ForStmt : public Node {
     ForStmt();
+};
+
+// for 'return' keyword
+// has only one kid -> returning value
+struct RetStmt : public Node {
+    RetStmt();
 };
 
 };  // namespace AST

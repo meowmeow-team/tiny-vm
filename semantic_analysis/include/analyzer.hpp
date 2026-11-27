@@ -19,6 +19,8 @@ class Analyzer {
     std::string cur_var_name;
     bool        is_var_decl;
 
+    std::string_view cur_func_name;
+
    private:
     void process_func(AST::FunctionDecl* func);
     void process_param(AST::ParamDecl* param, SymbolTable& table);
@@ -30,7 +32,10 @@ class Analyzer {
     void process_expression(AST::Node* node, SymbolTable& table,
                             SymbolTable::Type type);
 
+    void process_ret_stmt(AST::RetStmt* stmt, SymbolTable& table);
+
     void                     remb_funcs(AST::UnitDecl* unit);
     const SymbolTable::Meta& find_ref_meta(const Token& name,
                                            SymbolTable& table) const;
+    const SymbolTable::Meta& find_func_meta(const std::string& name) const;
 };
