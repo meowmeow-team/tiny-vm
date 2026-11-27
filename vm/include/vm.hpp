@@ -7,7 +7,7 @@
 #include "../../codegen/include/chunk.hpp"
 
 #define REG_AMOUNT 32
-#define ENTRY_POINT "main"
+#define ENTRY_POINT "meow"
 
 class VM {
    public:
