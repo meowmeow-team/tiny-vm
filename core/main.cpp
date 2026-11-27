@@ -4,6 +4,7 @@
 #include "../lexer/include/lexer.hpp"
 #include "../parser/include/parser.hpp"
 #include "../semantic_analysis/include/analyzer.hpp"
+#include "../vm/include/vm.hpp"
 #include "logger.hpp"
 #include "source_manager.hpp"
 
@@ -34,6 +35,12 @@ int main(void) {
     CodeGen codegen(src);
     auto    chunk = codegen.gen(&ast);
     std::cout << chunk << std::endl;
+
+    VM vm;
+    vm.load(std::move(chunk));
+    vm.enable_logging(&std::cout);
+
+    vm.run();
 
     return 0;
 }

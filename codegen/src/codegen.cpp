@@ -59,21 +59,24 @@ void CodeGen::gen_compound(AST::CompoundStmt* stmt) {
         if (!kid) continue;
         gen_generic(kid.get());
     }
-
-    auto opt = chunk.byte_code.get_last_ins();
-    if (opt && opt->opcode != Opcode::RET) {
-        chunk.byte_code.push_ins(Opcode::RET);
-    }
 }
 
 void CodeGen::gen_func(AST::FunctionDecl* func) {
     cur_is_func = true;
     cur_meta = {};
 
+    const auto& name = source_manager.get(func->ref_idx);
+    chunk.byte_code.push_func(name.get_lexeme());
+
     for (const auto& kiddo : func->kids) {
         if (!kiddo) continue;
 
         gen_generic(kiddo.get());
+    }
+
+    auto opt = chunk.byte_code.get_last_ins();
+    if (opt && opt->opcode != Opcode::RET) {
+        chunk.byte_code.push_ins(Opcode::RET);
     }
 
     cur_is_func = false;

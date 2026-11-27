@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -16,6 +17,11 @@ class ByteCode {
                   uint8_t rs2 = 0);
 
     std::optional<Instruction> get_last_ins() const noexcept;
+    Instruction                get_ins(size_t idx);
+    size_t                     get_size() const noexcept;
+
+    std::optional<std::string> find_func(size_t idx) const noexcept;
+    std::optional<uint32_t> find_func(const std::string& name) const noexcept;
 
     friend std::ostream& operator<<(std::ostream& out, const ByteCode& bc);
 
@@ -25,4 +31,7 @@ class ByteCode {
     std::unordered_map<std::string, uint32_t>
         funcs_defs;  // first arg - name of func
                      // second arg - index in src vector
+    std::map<uint32_t, std::string>
+        funcs_idx;  // first arg - index in src vector
+                    // second arg - name of func
 };
