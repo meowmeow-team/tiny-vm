@@ -10,7 +10,7 @@
 
 int main(void) {
     const char* path = getenv("HOME");
-    std::string fr = std::string(path) + "/tiny-vm/code_example";
+    std::string fr = std::string(path) + "/tiny-vm/code.meow";
 
     Logger log;
     log.enable_log_shell();

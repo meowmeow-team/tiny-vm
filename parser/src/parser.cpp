@@ -183,15 +183,30 @@ void Parser::parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt) {
             return;
         }
 
+        if (token.get_lexeme() == "return") {
+            parse_ret(idx, cstmt);
+            return;
+        }
+
         throw vm::syntax_error("unknown keyword in block", token.get_pos().row,
                                token.get_pos().column);
     }
 
-    if (token.get_type() == TokenType::KEYWORD_TYPE ||
-        token.get_type() == TokenType::IDENTIFIER) {
+    if (type == TokenType::KEYWORD_TYPE || type == TokenType::IDENTIFIER) {
         parse_func_assign(idx, cstmt);
         return;
     }
+
+    if (type == TokenType::KEYWORD_RET) {
+        if (token.get_lexeme() == "return") {
+            parse_ret(idx, cstmt);
+            return;
+        }
+
+        throw vm::syntax_error("unknown keyword_ret in block",
+                               token.get_pos().row, token.get_pos().column);
+    }
+
     throw vm::syntax_error("unexpected token in block", token.get_pos().row,
                            token.get_pos().column);
 }
@@ -391,6 +406,36 @@ void Parser::parse_for(uint32_t& idx, AST::CompoundStmt& cstmt) {
     throw vm::syntax_error("for is not implemented yet",
                            source_manager.get(idx).get_pos().row,
                            source_manager.get(idx).get_pos().column);
+}
+
+void Parser::parse_ret(uint32_t& idx, AST::CompoundStmt& cstmt) {
+    if (idx + 2 >= source_manager.size())
+        throw vm::syntax_error("bad syntax for return operation", 0, 0);
+
+    auto ret = std::make_unique<AST::RetStmt>();
+    ret->ref_idx = idx++;
+
+    std::unique_ptr<AST::Node> kid = nullptr;
+    const auto&                raw_kid = source_manager.get(idx);
+    if (raw_kid.get_type() == TokenType::IDENTIFIER) {
+        kid = std::make_unique<AST::RefVarDecl>();
+        kid->ref_idx = idx++;
+    } else if (raw_kid.get_type() == TokenType::NUMBER) {
+        kid = std::make_unique<AST::IntLiteralDecl>();
+        kid->ref_idx = idx++;
+    } else {
+        throw vm::syntax_error("unknown token type of return",
+                               raw_kid.get_pos().row, raw_kid.get_pos().column);
+    }
+
+    const auto& semicolon = source_manager.get(idx++);
+    if (semicolon.get_lexeme() != ";")
+        throw vm::syntax_error("forgot to add semicolon",
+                               semicolon.get_pos().row,
+                               semicolon.get_pos().column);
+
+    ret->kids.push_back(std::move(kid));
+    cstmt.kids.push_back(std::move(ret));
 }
 
 void Parser::check_eof(uint32_t idx) {

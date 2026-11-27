@@ -1,6 +1,8 @@
 #include "../include/lexer.hpp"
 
 #include <fstream>
+#include <iostream>
+#include <string>
 
 #include "../../core/exception.hpp"
 
@@ -8,6 +10,12 @@ Lexer::Lexer() : holder(), files_lexed(0) {}
 
 std::vector<Token> Lexer::load_file(const std::string& path) {
     if (path.empty()) throw vm::io_error("file path is empty");
+
+    const std::string suffix = ".meow";
+    if (path.size() < suffix.size()) throw vm::io_error("WHERE IS .MEOW");
+
+    if (path.compare(path.size() - suffix.size(), suffix.size(), suffix) != 0)
+        throw vm::io_error("WHERE IS .MEOW");
 
     std::ifstream file(path);
     if (!file.is_open()) throw vm::io_error("unable to open file: " + path);

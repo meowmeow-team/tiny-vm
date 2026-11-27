@@ -8,7 +8,8 @@ Analyzer::Analyzer(SourceManager& source_manager)
     : source_manager(source_manager),
       global_st(true),
       cur_var_name(),
-      is_var_decl(false) {}
+      is_var_decl(false),
+      cur_func_name() {}
 
 /*
  * example:
@@ -45,11 +46,17 @@ void Analyzer::process_unit(AST::UnitDecl* unit) {
                                 global_st);
             continue;
         }
+
+        if (kid->type == AST::NodeType::RET_STMT) {
+            throw vm::semantic_error("return operation outside the function");
+        }
     }
 }
 
 void Analyzer::process_func(AST::FunctionDecl* func) {
     SymbolTable local(false);  // local symbol table for only that func
+
+    cur_func_name = source_manager.get(func->ref_idx).get_lexeme();
 
     for (const auto& kid : func->kids) {
         if (!kid)
@@ -90,6 +97,9 @@ void Analyzer::process_body(AST::CompoundStmt* stmt, SymbolTable& table) {
             case AST::ASSIGN_STMT:
                 process_assign_decl(static_cast<AST::AssignStmt*>(kid.get()),
                                     table);
+                break;
+            case AST::RET_STMT:
+                process_ret_stmt(static_cast<AST::RetStmt*>(kid.get()), table);
                 break;
             default:
                 throw vm::semantic_error(
@@ -210,6 +220,32 @@ void Analyzer::process_expression(AST::Node* node, SymbolTable& table,
     }
 }
 
+void Analyzer::process_ret_stmt(AST::RetStmt* stmt, SymbolTable& table) {
+    if (stmt->kids.size() != 1)
+        throw vm::semantic_error(
+            "failed to process return stmt: invalid size of kids");
+
+    const auto& kid = stmt->kids[0];
+    const auto& name = source_manager.get(kid->ref_idx);
+
+    const auto& meta = find_func_meta(std::string(cur_func_name));
+
+    if (kid->type == AST::INT_LITERAL_DECL) {
+        if (meta.type != SymbolTable::Type::INT)
+            throw vm::semantic_error(
+                "failed to process return stmt: invalid return value type");
+    } else if (kid->type == AST::REF_VAR_DECL) {
+        const auto& var_meta =
+            find_ref_meta(source_manager.get(kid->ref_idx), table);
+        if (var_meta.type != meta.type)
+            throw vm::semantic_error(
+                "failed to proccess return stmt: invalid return value type");
+    } else {
+        throw vm::semantic_error(
+            "failed to process return stmt: unknown type of return value");
+    }
+}
+
 void Analyzer::remb_funcs(AST::UnitDecl* unit) {
     for (const auto& kid : unit->kids) {
         if (!kid) throw vm::semantic_error("register funcs: kid is nullptr");
@@ -241,4 +277,12 @@ const SymbolTable::Meta& Analyzer::find_ref_meta(const Token& name,
     }
 
     return table.get(name.get_lexeme());
+}
+
+const SymbolTable::Meta& Analyzer::find_func_meta(
+    const std::string& name) const {
+    if (!global_st.contains(name, SymbolTable::Group::FUNCTION))
+        throw vm::semantic_error("failed to find func meta");
+
+    return global_st.get(name);
 }
