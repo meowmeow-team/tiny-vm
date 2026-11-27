@@ -11,7 +11,8 @@ VM::VM()
       chunk(),
       cur_func(Func::NONE),
       func_nesting(0),
-      saved_ins{} {}
+      saved_ins{},
+      ret_value() {}
 
 VM::VM(Chunk chunk)
     : regs(),
@@ -20,7 +21,8 @@ VM::VM(Chunk chunk)
       chunk(std::move(chunk)),
       cur_func(Func::NONE),
       func_nesting(0),
-      saved_ins{} {}
+      saved_ins{},
+      ret_value() {}
 
 void VM::load(Chunk chunk) { this->chunk = std::move(chunk); }
 
@@ -39,6 +41,7 @@ void VM::run() {
 
     crawling();
     execute();
+    out_exit_code();
 }
 
 void VM::crawling() {
@@ -93,7 +96,10 @@ void VM::execute() {
                     static_cast<int>(ins.rs2));
                 break;
             case Opcode::RET:
-                if (cur_func == Func::MAIN) return;
+                if (cur_func == Func::MAIN) {
+                    ret_value = regs[ins.rd];
+                    return;
+                }
                 func_nesting--;
                 break;
             case Opcode::HALT:
@@ -102,4 +108,17 @@ void VM::execute() {
 
         cur_ins++;
     }
+}
+
+void VM::out_exit_code() {
+    if (!ret_value.has_value()) throw vm::vms_error("failed to get exit code");
+
+    std::string val;
+    if (const auto* s = std::any_cast<int>(&ret_value)) {
+        val = std::to_string(*s);
+    } else if (const auto* s = std::any_cast<char>(&ret_value)) {
+        val = std::to_string(*s);
+    }
+
+    log("program ended with exit code: ", val);
 }

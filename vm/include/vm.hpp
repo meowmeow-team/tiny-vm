@@ -36,6 +36,8 @@ class VM {
                                       // 2...inf -> another funcs
     std::stack<size_t> saved_ins;
 
+    std::any ret_value;
+
    private:
     /*
      * pipeline idea:
@@ -51,10 +53,13 @@ class VM {
      *                  making func_nesting++;
      *                  executing works until the vm meets RET in the @main func
      *                  or byte code bounds;
+     * > 3. @out_exit_code() -> getting the value of @return operation in the
+     *                  entry point, outputs it if logging is enabled
      * > vm sayonara;
      */
     void crawling();
     void execute();
+    void out_exit_code();
 
     template <typename... targs>
     void log(const targs&... args) noexcept {

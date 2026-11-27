@@ -35,6 +35,7 @@ class CodeGen {
     void gen_param(AST::ParamDecl* param);
     void gen_var_decl(AST::VariableDecl* decl);
     void gen_assign_decl(AST::AssignStmt* stmt);
+    void gen_ret_stmt(AST::RetStmt* stmt);
 
     void gen_expression(AST::Node* stmt, VarMeta& var_meta);
 

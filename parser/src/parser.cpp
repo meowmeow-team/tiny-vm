@@ -192,11 +192,21 @@ void Parser::parse_func_decl(uint32_t& idx, AST::CompoundStmt& cstmt) {
                                token.get_pos().column);
     }
 
-    if (token.get_type() == TokenType::KEYWORD_TYPE ||
-        token.get_type() == TokenType::IDENTIFIER) {
+    if (type == TokenType::KEYWORD_TYPE || type == TokenType::IDENTIFIER) {
         parse_func_assign(idx, cstmt);
         return;
     }
+
+    if (type == TokenType::KEYWORD_RET) {
+        if (token.get_lexeme() == "return") {
+            parse_ret(idx, cstmt);
+            return;
+        }
+
+        throw vm::syntax_error("unknown keyword_ret in block",
+                               token.get_pos().row, token.get_pos().column);
+    }
+
     throw vm::syntax_error("unexpected token in block", token.get_pos().row,
                            token.get_pos().column);
 }

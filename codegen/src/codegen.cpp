@@ -41,6 +41,9 @@ void CodeGen::gen_generic(AST::Node* node) {
         case AST::ASSIGN_STMT:
             gen_assign_decl(static_cast<AST::AssignStmt*>(node));
             break;
+        case AST::RET_STMT:
+            gen_ret_stmt(static_cast<AST::RetStmt*>(node));
+            break;
         default:
             std::cout << "LOOOL: " << node->type << std::endl;
             throw vm::codegen_error("failed to gen: unknown type of node");
@@ -121,6 +124,21 @@ void CodeGen::gen_assign_decl(AST::AssignStmt* stmt) {
     }
 
     gen_expression(rhs.get(), meta);
+}
+
+void CodeGen::gen_ret_stmt(AST::RetStmt* stmt) {
+    const auto& kid = stmt->kids[0];
+
+    const uint8_t reg = 0;
+    if (kid->type == AST::INT_LITERAL_DECL) {
+        const auto& val = source_manager.get(kid->ref_idx);
+
+        chunk.byte_code.push_ins(
+            Opcode::LOAD_CONST, reg,
+            static_cast<uint8_t>(std::stoi(val.get_lexeme())));
+        chunk.byte_code.push_ins(Opcode::RET, reg);
+    } else if (kid->type == AST::REF_VAR_DECL) {
+    }
 }
 
 void CodeGen::gen_expression(AST::Node* stmt, VarMeta& var_meta) {
