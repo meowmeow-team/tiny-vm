@@ -65,6 +65,11 @@ void VM::execute() {
     while (cur_ins < bc.get_size()) {
         const auto ins = bc.get_ins(cur_ins);
         switch (ins.opcode) {
+            case Opcode::MOV:
+                regs[ins.rd] = regs[ins.rs1];
+                log("executing MOV: ", static_cast<int>(ins.rd), " <- ",
+                    static_cast<int>(ins.rs1));
+                break;
             case Opcode::LOAD_CONST:
                 regs[ins.rd] = ins.rs1;
                 log("executing LOAD_CONST: ", static_cast<int>(ins.rd), " <- ",

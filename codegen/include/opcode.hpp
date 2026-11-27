@@ -11,9 +11,9 @@ enum class Opcode : uint8_t {
     MUL,
     DIV,
     // memory
-    MOV,
-    LOAD,        // hueta 1
-    LOAD_CONST,  // hueta 2
+    MOV,         // hueta 1 (copy from one reg to another)
+    LOAD,        // hueta 2 (idk why, maybe for future heap objects)
+    LOAD_CONST,  // hueta 3 (i guess for const variables like literals)
     // transitions
     JMP,
     // other
